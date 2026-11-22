@@ -191,7 +191,7 @@
     G.racers = b.list; G.player = b.p; G.dist = G.cfg.dist;
     G.racers.forEach(r => { if (r.ai) SIM.aiPrepare(r, G.cfg, Math.random); });
     G.lz = SIM.launchZone(G.player.car, G.cfg); G.sz = SIM.shiftZone(G.player.car, G.cfg);
-    G.phase = 'stage'; G.phaseT = 0; G.redDur = od ? od.redDur : 2 + Math.random() * 3; G.sendT = 0; G.redLit = false; G.msg = null;
+    G.phase = 'stage'; G.phaseT = 0; G.redDur = od ? od.redDur : 2 + Math.random() * 3; G.sendT = 0; G.raceT = 0; G.redLit = false; G.msg = null;
     cheer.a = 0.3; cheer.b = 0.15; cheer.done = false; G.camX = -camOff(); look = 0; acc = 0; G.hud = true; G.paused = false; G.finishT = 0; G.pos = 1;
     input.gas = false; input.shiftQ = 0;
     RENDER.clearParts();
@@ -229,6 +229,7 @@
       return;
     }
     if (G.phase === 'race' || G.phase === 'finish') {
+      G.raceT = (G.raceT || 0) + dt;
       G.sz = SIM.shiftZone(p.car, G.cfg, p.gear);
       if (G.phase === 'race' && G.phaseT < SHIFT_LOCK) input.shiftQ = 0;
       while (input.shiftQ > 0) {
@@ -434,7 +435,11 @@
     ON.peers[0].at = ON.joinedAt;
     net.onPeers(list => { ON.peers = list.filter(x => x && x.id); if (!ON.peers.some(x => x.id === NET.myId)) ON.peers.push(onMe()); onPeersChanged(); });
     net.on('start', onNetStart);
-    net.on('st', d => { if (d && d.id) { d.rt = performance.now(); ON.states[d.id] = d; } });
+    net.on('st', d => {
+      if (!d || !d.id) return;
+      const b = ON.states[d.id] || (ON.states[d.id] = { buf: [] });
+      Object.assign(b, d); if (d.t != null) { b.buf.push({ t: d.t, x: d.x, v: d.v }); if (b.buf.length > 900) b.buf.shift(); }
+    });
     onTrack(); onView(true); renderOnline();
     if (expect) setTimeout(onPeersChanged, 9500);
     try { history.replaceState(null, '', location.pathname + '?room=' + code + (NET.LOCAL ? '&net=local' : '')); } catch (e) { }
@@ -487,12 +492,13 @@
     const pc = SIM.buildCar(CAR(save.car), save.cars[save.car].mods), cos = cosmFor(save.car);
     const p = SIM.makeRacer(pc, { name: pilotName(save.pilot), lane: 3, paint: cos.paint && cos.paint !== 'orig' ? cos.paint : pc.color });
     p.cosm = Object.assign({ glow: '#ffd23f' }, cos); p.flameT = 0; p.puffT = 0; p.pilot = save.pilot;
-    /* in due si corre nelle corsie centrali */
-    const others = d.peers.filter(pe => pe.id !== NET.myId).slice(0, 3), lanes = others.length === 1 ? [1] : [2, 1, 0];
-    if (others.length === 1) p.lane = 2;
-    const list = [p]; let li = 0;
-    others.forEach(pe => {
-      const lane = lanes[li++];
+    /* corsie uguali su tutti i telefoni, in ordine di stanza (il primo in basso); in due le corsie centrali */
+    const all = d.peers.slice(0, 4), LN = all.length === 2 ? [2, 1] : all.length === 3 ? [3, 2, 1] : [3, 2, 1, 0];
+    const laneOf = id => LN[Math.max(0, all.findIndex(x => x.id === id))];
+    p.lane = laneOf(NET.myId);
+    const list = [p];
+    all.filter(pe => pe.id !== NET.myId).forEach(pe => {
+      const lane = laneOf(pe.id);
       const base = CAR(pe.car) || CAR(ROSTER[0]), cz = pe.cosm || {};
       const r = SIM.makeRacer(SIM.buildCar(base, {}), { name: pe.name, lane: lane, paint: cz.paint && cz.paint !== 'orig' ? cz.paint : base.color });
       r.cosm = Object.assign({ glow: ['#19c3d1', '#ff2e7e', '#8a3cf0'][lane % 3] }, cz); r.flameT = 0; r.puffT = 0; r.pilot = pe.pilot || 0;
@@ -503,25 +509,35 @@
   }
   /* gli avversari online non vengono simulati: si seguono le posizioni che mandano (15 volte al secondo) */
   function remotePre(r) { const s = ON.states[r.remote]; if (s) r.rpm = s.rpm; }
+  /* l'avversario si disegna dove si trovava allo STESSO tempo di gara del giocatore (ognuno parte dal suo verde):
+     così chi è davanti sullo schermo è chi è davanti nei tempi, anche con il ritardo della rete */
+  function remoteAt(b, t) {
+    const B = b.buf; if (!B.length) return null;
+    if (t <= B[0].t) return { x: B[0].x, v: B[0].v };
+    for (let i = B.length - 1; i > 0; i--) if (B[i - 1].t <= t && t <= B[i].t) { const a = B[i - 1], c = B[i], f = (t - a.t) / Math.max(1e-3, c.t - a.t); return { x: a.x + (c.x - a.x) * f, v: a.v + (c.v - a.v) * f }; }
+    const L = B[B.length - 1], dt = Math.min(0.8, t - L.t);
+    return { x: L.x + L.v * dt, v: L.v };
+  }
   function remoteStep(r, dt) {
-    const s = ON.states[r.remote];
-    if (s && s.ph === 'race') {
-      const age = Math.min(0.5, (performance.now() - s.rt) / 1000), tx = s.x + s.v * age;
-      r.v += (s.v - r.v) * Math.min(1, dt * 6);
-      r.x += r.v * dt; r.x += (tx - r.x) * Math.min(1, dt * 5);
-      r.rpm = s.rpm; r.gear = s.g; r.spin = s.sp || 0;
-      if (s.n > r.nShift) { r.nShift = s.n; r.flameT = 0.4; }
-      if (s.ft && !r.finished) { r.finished = true; r.finishTime = s.ft; r.trap = s.tr || 0; r.events.push({ t: 'finish' }); }
-      if (s.bl && !r.blown) r.blown = true;
-    } else if (r.finished || r.gone) { r.v = Math.max(0, r.v - 6 * dt); r.x += r.v * dt; }
+    const b = ON.states[r.remote], t = G.raceT || 0;
+    if (b && b.buf && b.buf.length) {
+      if (b.ft && t >= b.ft && !r.finished) { r.finished = true; r.finishTime = b.ft; r.trap = b.tr || 0; r.events.push({ t: 'finish' }); }
+      const q = remoteAt(b, t);
+      if (q) { r.x += (q.x - r.x) * Math.min(1, dt * 14); r.v = q.v; }
+      r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0;
+      if (b.n > r.nShift) { r.nShift = b.n; r.flameT = 0.4; }
+      if (b.bl && !r.blown) r.blown = true;
+      r.time = t;
+    }
+    if (r.gone) { r.v = Math.max(0, r.v - 6 * dt); r.x += r.v * dt; }
     r.wheelAng += (r.v * (1 + (r.spin || 0) * 2.2) / r.car.rw) * dt;
   }
   function onSendState(dt) {
     G.sendT -= dt;
     if (G.sendT > 0 || !ON.net) return;
-    G.sendT = 1 / 15;
+    G.sendT = 1 / 20;
     const p = G.player;
-    ON.net.send('st', { id: NET.myId, ph: 'race', x: +p.x.toFixed(2), v: +p.v.toFixed(2), rpm: Math.round(p.rpm), g: p.gear, sp: +(p.spin || 0).toFixed(2), n: p.shifts.length, ft: p.finished ? p.finishTime : 0, tr: p.trap || 0, bl: !!p.blown });
+    ON.net.send('st', { id: NET.myId, ph: 'race', t: +(G.raceT || 0).toFixed(3), x: +p.x.toFixed(2), v: +p.v.toFixed(2), rpm: Math.round(p.rpm), g: p.gear, sp: +(p.spin || 0).toFixed(2), n: p.shifts.length, ft: p.finished ? p.finishTime : 0, tr: p.trap || 0, bl: !!p.blown });
   }
   function onBackToRoom() { G.phase = 'menu'; G.mode = 'quick'; ON.inRace = false; onTrack(); goMenu(); onOpenScreen(); }
 

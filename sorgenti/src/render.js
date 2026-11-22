@@ -856,7 +856,7 @@ const RENDER = (function () {
     zones.forEach(z => {
       if (z[1] < left || z[0] > right) return;
       ctx.save(); ctx.beginPath(); ctx.rect(xs(z[0]), 0, xs(z[1]) - xs(z[0]), H); ctx.clip();
-      tileDraw(ctx, T.fence, camX * PPM, base - T.fence.height); ctx.restore();
+      tileDraw(ctx, T.fence, camX * PPM, base - (T.fence._lh || T.fence.height)); ctx.restore();
     });
     /* striscioni: ogni 26 m sul muro, alternati; nei tratti dei tifosi legati alla recinzione */
     if (BANNERS.length && BANNERS.every(b => b.complete && b.width)) {
