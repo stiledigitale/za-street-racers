@@ -23,3 +23,4 @@ I salvataggi (crediti, garage, pilota) restano nel browser di chi gioca.
 
 ## Per riprendere con Claude
 Collega il repository stiledigitale/za-street-racers e scrivi: *"Questo è il mio gioco ZA STREET RACERS. Leggi LEGGIMI.md e continuiamo da qui."*
+
