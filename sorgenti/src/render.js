@@ -1156,9 +1156,23 @@ const RENDER = (function () {
   function versions(id) { return CARMAP[id].length; }
   /* Ridimensionare 600 px a 200 px a ogni fotogramma pesa sui telefoni e fa perdere fotogrammi:
      ogni immagine viene scalata una volta per dimensione e poi riusata. */
-  function scaled(im, w, h) {
+  /* maschera di contrasto: ridà definizione ai contorni dopo la riduzione (solo per le carrozzerie, una volta per misura) */
+  function sharpen(cv, amt) {
+    const c = cv.getContext('2d'), w = cv.width, h = cv.height; let id;
+    try { id = c.getImageData(0, 0, w, h); } catch (e) { return; }
+    const d = id.data, o = new Uint8ClampedArray(d), row = w * 4;
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * row + x * 4; if (o[i + 3] < 8) continue;
+      for (let ch = 0; ch < 3; ch++) {
+        const j = i + ch, b = (o[j - 4] + o[j + 4] + o[j - row] + o[j + row]) * 0.25;
+        d[j] = o[j] + (o[j] - b) * amt;
+      }
+    }
+    c.putImageData(id, 0, 0);
+  }
+  function scaled(im, w, h, sharp) {
     w = Math.max(1, Math.round(w * RS)); h = Math.max(1, Math.round(h * RS));
-    const key = w + 'x' + h;
+    const key = w + 'x' + h + (sharp ? 's' : '');
     im._c = im._c || {};
     if (im._c[key]) return im._c[key];
     let src = im, sw = im.width, sh = im.height;
@@ -1168,6 +1182,7 @@ const RENDER = (function () {
       src = t; sw = t.width; sh = t.height;
     }
     const cv = mk(w, h), cc = cv.getContext('2d'); cc.imageSmoothingQuality = 'high'; try { cc.filter = VIVID; } catch (e) { } cc.drawImage(src, 0, 0, w, h);
+    if (sharp) sharpen(cv, 0.7);
     const keys = Object.keys(im._c); if (keys.length > 12) delete im._c[keys[0]];
     im._c[key] = cv;
     return cv;
@@ -1373,7 +1388,7 @@ const RENDER = (function () {
     if (!sp || !sp.body.complete) return;
     /* assetto: le auto nuove si abbassano sulle ruote (0 di serie, 1 sport, 2 ribassato) */
     const drop = sp.v2 && o.look ? [0, 5.7, 12.8][o.look.ride | 0] || 0 : 0;
-    const k = o.sc / sp.ppm, x0 = o.x - sp.front * k, y0 = o.y - (sp.ground - drop) * k;
+    const k = o.sc / sp.ppm, x0 = Math.round((o.x - sp.front * k) * RS) / RS, y0 = Math.round((o.y - (sp.ground - drop) * k) * RS) / RS; /* allineate ai pixel veri: niente sfocatura */
     const midX = x0 + (sp.rear + sp.front) / 2 * k, halfL = (sp.front - sp.rear) / 2 * k;
     c.save();
     if (P.night) {
@@ -1403,7 +1418,7 @@ const RENDER = (function () {
       }
     }
     const bw = Math.round(sp.w * k), bh = Math.round(sp.h * k);
-    const drawBody = () => c.drawImage(scaled(bodyFor(sp, o.look), bw, bh), x0, y0, bw, bh);
+    const drawBody = () => { const bi = scaled(bodyFor(sp, o.look), bw, bh, true); c.drawImage(bi, x0, y0, bi.width / RS, bi.height / RS); };
     if (!sp.v2) drawBody();
     /* ruote che girano */
     const ang = o.wheelAng || 0, blur = o.blur || 0;
@@ -1555,6 +1570,13 @@ const RENDER = (function () {
     skewPanel(c, 1006, 22, 150, 96, 16, '#ffd23f');
     c.fillStyle = INK; c.textAlign = 'center'; c.font = fd(900, 66); c.fillText(st.pos + '°', 1081, 64);
     c.font = fd(800, 17); c.fillText(TX('hud.ofN', st.racers.length), 1076, 104);
+    /* livello della nitro */
+    if (typeof SIM !== 'undefined' && SIM.nitroLeft) {
+      const nl = SIM.nitroLeft(p), nx = 1000, ny = 130, nw = 150;
+      c.textAlign = 'left'; c.font = fd(900, 15); c.fillStyle = '#5fd8ff'; c.strokeStyle = INK; c.lineWidth = 3; c.strokeText('NITRO', nx, ny + 8); c.fillText('NITRO', nx, ny + 8);
+      rrect(c, nx + 50, ny, nw - 50, 16, 5); inked(c, '#1d1733', 3);
+      if (nl > 0) { rrect(c, nx + 52, ny + 2, (nw - 54) * nl, 12, 4); c.fillStyle = p.nitroT > 0 ? '#e8ffff' : '#2ab8f0'; c.fill(); }
+    }
 
     /* messaggio grande */
     if (st.msg && st.msg.t > 0) {

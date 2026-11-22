@@ -10,7 +10,7 @@
      regge 50 fotogrammi al secondo, si scende a passi fino a 1x. La scelta resta salvata per le volte dopo. */
   const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   let CK2 = 1, QMAX = 2;
-  try { const q = parseFloat(localStorage.getItem('zsr_q')); if (q >= 1 && q <= 2) QMAX = q; } catch (e) { }
+  try { const q = parseFloat(localStorage.getItem('zsr_q2')); if (q >= 1.25 && q <= 2) QMAX = q; } catch (e) { }
   if (IOS) QMAX = Math.min(QMAX, 1.5);
   function fitCanvas() {
     const r = cv.getBoundingClientRect(), k = Math.max(1, Math.min(QMAX, (r.width * (devicePixelRatio || 1)) / 1280));
@@ -24,9 +24,9 @@
     perf.n++; perf.sum += dt;
     if (perf.n >= 90) {
       const avg = perf.sum / perf.n; perf.n = 0; perf.sum = 0;
-      if (avg > 1 / 50 && CK2 > 1.01) {
-        QMAX = Math.max(1, Math.round((CK2 - 0.25) * 4) / 4);
-        try { localStorage.setItem('zsr_q', String(QMAX)); } catch (e) { }
+      if (avg > 1 / 50 && CK2 > 1.26 && isRacing()) {
+        QMAX = Math.max(1.25, Math.round((CK2 - 0.25) * 4) / 4);
+        try { localStorage.setItem('zsr_q2', String(QMAX)); } catch (e) { }
         fitCanvas(); perf.cool = 2;
       }
     }
@@ -135,7 +135,7 @@
   function fireNitro() {
     const p = G.player;
     if (!p || G.phase !== 'race' || G.paused || !SIM.nitro(p)) return;
-    AUDIO.fx('blowoff'); AUDIO.fx('backfire'); setMsg(T('race.nitro'), '#5fd8ff', T('race.nitroHint', SIM.NITRO_T[p.car.nitro]), 1);
+    AUDIO.fx('blowoff'); AUDIO.fx('backfire'); setMsg(T('race.nitro'), '#5fd8ff', T('race.nitroHint', SIM.NITRO_T[p.car.nitro | 0]), 1);
     $('btnNitro').classList.add('used');
   }
   $('btnNitro').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); fireNitro(); });
@@ -233,7 +233,7 @@
     RENDER.clearParts();
     showScreen(null);
     $('touch').classList.toggle('on', touchSeen); setOneBtn(false);
-    $('btnNitro').hidden = !G.player.car.nitro; $('btnNitro').classList.remove('used');
+    $('btnNitro').hidden = false; $('btnNitro').classList.remove('used');
     $('corner').classList.add('on');
     setMsg(T('race.ready'), '#f0c35a', T('race.readyHint', T(touchSeen ? 'btn.gas' : 'key.space')), 1.4);
   }
@@ -727,13 +727,13 @@
   function renderMods(id) {
     const slot = save.cars[id];
     $('gItems').innerHTML = SIM.MODS.map(m => {
-      const l = slot.mods[m.id] | 0, cost = SIM.MOD_COST[l], max = l >= 3;
+      const l = slot.mods[m.id] | 0, cost = (m.id === 'nitro' ? SIM.NITRO_COST : SIM.MOD_COST)[l], max = l >= 3;
       const pips = [0, 1, 2].map(i => '<i class="' + (i < l ? 'on' : '') + '"></i>').join('');
       return '<button type="button" class="gi' + (!max && save.credits < cost ? ' poor' : '') + '" data-mod="' + m.id + '"><b>' + T('mod.' + m.id) + '</b><div class="pips">' + pips + '</div><span class="sub">' + T('mod.' + m.id + '.d') + '</span>' +
         (max ? '<small>' + T('g.max') + '</small>' : '<small class="cost">' + cost + '</small>') + '</button>';
     }).join('');
     $('gItems').querySelectorAll('[data-mod]').forEach(b => b.addEventListener('click', () => {
-      const mid = b.dataset.mod, l = slot.mods[mid] | 0, cost = SIM.MOD_COST[l];
+      const mid = b.dataset.mod, l = slot.mods[mid] | 0, cost = (mid === 'nitro' ? SIM.NITRO_COST : SIM.MOD_COST)[l];
       if (save.credits < cost || l >= 3) return;
       save.credits -= cost; slot.mods[mid] = l + 1; persist(); AUDIO.fx('buy'); renderGarage();
     }));

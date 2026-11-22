@@ -199,7 +199,7 @@ const I18N = {
   'mod.peso.d': ["−3,5% di massa per livello", "−3.5% weight per level", "−3,5% Masse pro Stufe", "−3,5% de peso por nivel", "−3,5% de masse par niveau"],
   'mod.motore': ["Motore", "Engine", "Motor", "Motor", "Moteur"],
   'mod.nitro': ["Nitro", "Nitro", "Nitro", "Nitro", "Nitro"],
-  'mod.nitro.d': ["+30% di spinta una volta a gara (1,2 / 1,8 / 2,5 s)", "+30% thrust once per race (1.2 / 1.8 / 2.5 s)", "+30% Schub einmal pro Rennen (1,2 / 1,8 / 2,5 s)", "+30% de empuje una vez por carrera (1,2 / 1,8 / 2,5 s)", "+30% de poussée une fois par course (1,2 / 1,8 / 2,5 s)"],
+  'mod.nitro.d': ["Bombola più grande: di serie 0,4 s, poi 1,0 / 1,7 / 2,5 s di spinta +30%", "Bigger bottle: stock 0.4 s, then 1.0 / 1.7 / 2.5 s of +30% thrust", "Größere Flasche: Serie 0,4 s, dann 1,0 / 1,7 / 2,5 s mit +30% Schub", "Botella más grande: de serie 0,4 s, luego 1,0 / 1,7 / 2,5 s de +30%", "Bouteille plus grande : de série 0,4 s, puis 1,0 / 1,7 / 2,5 s à +30 %"],
   'btn.nitro': ["NITRO", "NITRO", "NITRO", "NITRO", "NITRO"],
   'race.nitro': ["NITRO!", "NITRO!", "NITRO!", "¡NITRO!", "NITRO !"],
   'race.nitroHint': ["+30% per {0} s", "+30% for {0} s", "+30% für {0} s", "+30% durante {0} s", "+30% pendant {0} s"],

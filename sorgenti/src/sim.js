@@ -311,7 +311,7 @@ const SIM = (function () {
     { id: 'frizione', name: 'Frizione', desc: 'cambiate più rapide del 12%' },
     { id: 'pneumatici', name: 'Pneumatici', desc: 'più aderenza: meno pattinamento al via' },
     { id: 'peso', name: 'Alleggerimento', desc: '−3,5% di massa per livello' },
-    { id: 'nitro', name: 'Nitro', desc: 'una spinta del 30% una volta a gara: 1,2 / 1,8 / 2,5 secondi' },
+    { id: 'nitro', name: 'Nitro', desc: 'bombola più grande: da 0,4 s di serie a 1,0 / 1,7 / 2,5 secondi' },
     { id: 'motore', name: 'Motore', desc: '+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere' }
   ];
   const MOD_COST = [500, 1200, 2500];
@@ -344,15 +344,18 @@ const SIM = (function () {
   }
 
   /* nitro: una volta a gara, dopo la partenza */
-  const NITRO_T = [0, 1.2, 1.8, 2.5];
+  /* ogni auto ha un goccino di nitro (0,4 s); col potenziamento la bombola cresce */
+  const NITRO_T = [0.4, 1.0, 1.7, 2.5];
+  const NITRO_COST = [3000, 7000, 14000];
   function nitro(r) {
-    if (!r.car.nitro || r.nitroUsed || !r.launched || r.finished || r.blown) return false;
-    r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro]; return true;
+    if (r.nitroUsed || !r.launched || r.finished || r.blown) return false;
+    r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro | 0]; return true;
   }
+  function nitroLeft(r) { return !r.nitroUsed ? 1 : Math.max(0, r.nitroT || 0) / NITRO_T[r.car.nitro | 0]; }
   /* scala dei potenziamenti: somma dei livelli (0-30) e classe, usata anche per il matchmaking online */
   function modScore(mods) { return MODS.reduce((s, m) => s + Math.max(0, Math.min(3, (mods || {})[m.id] | 0)), 0); }
   function modClass(mods) { const s = modScore(mods); return s <= 5 ? 0 : s <= 13 ? 1 : s <= 21 ? 2 : 3; }
-  return { modScore, modClass, nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
+  return { modScore, modClass, nitro, nitroLeft, NITRO_COST, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
     makeRacer, aiPrepare, stepPre, launch, tryShift, stepRace, idealRun, gauss };
 })();
 if (typeof module !== 'undefined') module.exports = SIM;
