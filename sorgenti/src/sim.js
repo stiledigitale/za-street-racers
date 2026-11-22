@@ -73,7 +73,7 @@ const SIM = (function () {
 
   function shiftCenter(car) { return car.redline - 950; }
   /* zona verde del cambio: a ogni marcia sale un poco verso i giri alti e si stringe */
-  const ZONE_UP = 70, ZONE_NARROW = 0.07;
+  const ZONE_UP = 90, ZONE_NARROW = 0.12;
   function shiftZone(car, cfg, gear) {
     const g = Math.max(0, Math.min(4, (gear || 1) - 1));
     const w = cfg.band * car.zoneMul * (1 - ZONE_NARROW * g), c = shiftCenter(car) + ZONE_UP * g;
@@ -210,8 +210,15 @@ const SIM = (function () {
     } else if (r.finished) {
       /* dopo il traguardo: 2 s col piede alzato (solo aria e freno motore), poi una frenata dolce */
       r.postT = (r.postT || 0) + dt;
-      F = r.v <= 0 ? 0 : -car.m * (r.postT < 2 ? 0.5 : 3.0);
-      r.rpm += (Math.max(car.idle, r.v * k * rat[r.gear - 1] * 0.7) - r.rpm) * Math.min(1, dt * 4);
+      F = r.v <= 0 ? 0 : -car.m * (r.postT < 1.2 ? 0.6 : 3.4);
+      /* scalate: una marcia giù ogni mezzo secondo, con la doppietta (colpo di gas) e lo scoppio dallo scarico */
+      r.downT = (r.downT || 0) - dt;
+      if (r.postT > 0.7 && r.gear > 2 && r.v > 4 && r.downT <= 0) {
+        r.gear--; r.downT = 0.5;
+        r.rpm = Math.min(car.redline - 200, r.v * k * rat[r.gear - 1] + 900);
+        r.events.push({ t: 'down' });
+      }
+      r.rpm += (Math.max(car.idle, r.v * k * rat[r.gear - 1] * 0.85) - r.rpm) * Math.min(1, dt * 3);
       r.onLimiter = false;
     } else if (r.shiftT > 0) {
       r.shiftT -= dt;
@@ -302,7 +309,7 @@ const SIM = (function () {
     { id: 'nitro', name: 'Nitro', desc: 'una spinta del 30% una volta a gara: 1,2 / 1,8 / 2,5 secondi' },
     { id: 'motore', name: 'Motore', desc: '+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere' }
   ];
-  const MOD_COST = [200, 350, 550];
+  const MOD_COST = [500, 1200, 2500];
   function buildCar(base, mods) {
     mods = mods || {};
     const L = id => Math.max(0, Math.min(3, mods[id] | 0));
@@ -337,7 +344,10 @@ const SIM = (function () {
     if (!r.car.nitro || r.nitroUsed || !r.launched || r.finished || r.blown) return false;
     r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro]; return true;
   }
-  return { nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
+  /* scala dei potenziamenti: somma dei livelli (0-30) e classe, usata anche per il matchmaking online */
+  function modScore(mods) { return MODS.reduce((s, m) => s + Math.max(0, Math.min(3, (mods || {})[m.id] | 0)), 0); }
+  function modClass(mods) { const s = modScore(mods); return s <= 5 ? 0 : s <= 13 ? 1 : s <= 21 ? 2 : 3; }
+  return { modScore, modClass, nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
     makeRacer, aiPrepare, stepPre, launch, tryShift, stepRace, idealRun, gauss };
 })();
 if (typeof module !== 'undefined') module.exports = SIM;

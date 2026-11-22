@@ -410,6 +410,19 @@ td.r, th.r { text-align: right; }
   #scrCareer .tappa .d { font-size: 0.75em; }
 }
 
+/* classifica online e contatore */
+#scrLb { padding: 1em 1.6em; overflow: hidden; }
+#scrLb h2 { font-size: 1.6em; }
+.lbtabs .btn { font-size: 1em; padding: 0.4em 1em; } .lbtabs .btn.on { --fill: var(--yellow); color: var(--ink); }
+.lbbox { margin-top: 0.7em; height: 64cqh; overflow: hidden; columns: 2; column-gap: 1.2em; }
+.lbt { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+.lbt td { padding: 0.18em 0.4em; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+.lbt td.p { font-family: var(--f-d); font-weight: 900; width: 2em; color: #ffd84a; } .lbt td.r { text-align: right; font-family: var(--f-d); font-weight: 800; }
+.lbt img { width: 1.6em; height: 1.6em; border-radius: 0.3em; object-fit: cover; object-position: top; vertical-align: middle; margin-right: 0.4em; background: #f8f6ee; }
+.lbt tr.me td { background: rgba(255,216,74,0.18); }
+#netCount { position: absolute; top: 10.4cqh; right: 1.4cqw; z-index: 51; font: 800 1.7cqh var(--f-b); color: #fff; background: rgba(13,10,18,0.75); border: 2px solid var(--ink); border-radius: 1em; padding: 0.15em 0.6em; pointer-events: none; }
+#netCount::before { content: ''; display: inline-block; width: 0.6em; height: 0.6em; border-radius: 50%; background: #3cf07a; margin-right: 0.35em; box-shadow: 0 0 0.4em #3cf07a; vertical-align: 0.05em; }
+#netCount[hidden] { display: none; }
 /* multiplayer online */
 .monline { position: absolute; right: 2cqw; bottom: 23cqh; width: 26cqw; height: 11cqh; flex-direction: column; gap: 0; font-size: 1em; }
 .monline b { font-size: 1.5em; line-height: 1; } .monline span { font-size: 0.75em; font-family: var(--f-b); font-style: normal; font-weight: 700; }
@@ -439,6 +452,7 @@ td.r, th.r { text-align: right; }
     <button id="btnShift" class="imgbtn" type="button" aria-label="Cambio" data-i18n-aria="btn.shift"><img alt="" id="imgShift"><span data-i18n="btn.shift">CAMBIO</span></button>
   </div>
   <button class="gbtn dark mfull" id="btnFull" type="button" aria-label="Schermo intero">⛶</button>
+  <div id="netCount" hidden></div>
   <div id="corner">
     <button id="btnPause" class="imgbtn" type="button" aria-label="Pausa" data-i18n-aria="btn.pause"><img alt="" id="imgPause"></button>
     <button id="btnSound" type="button" data-i18n="audio.on">AUDIO ON</button>
@@ -459,7 +473,7 @@ td.r, th.r { text-align: right; }
       <button class="gbtn purple mb" data-act="career" type="button"><b data-i18n="menu.career">Carriera</b><span data-i18n="menu.careerSub">Sei tappe, sempre più strette</span></button>
       <button class="gbtn blue mb" data-act="garage" type="button"><b data-i18n="menu.garage">Garage</b><span data-i18n="menu.garageSub">Elaborazioni, colori, cerchi</span></button>
       <button class="gbtn green mb" data-act="pilots" type="button"><b data-i18n="p.kicker">Piloti</b><span data-i18n="p.title">Scegli il tuo pilota</span></button>
-      <button class="gbtn dark mb off" data-act="rules" type="button" disabled><b data-i18n="menu.rules">Regole</b><span data-i18n="menu.rulesSub">Valori, luce e audio</span></button>
+      <button class="gbtn dark mb" data-act="lb" type="button"><b data-i18n="lb.title">Classifica online</b><span data-i18n="lb.menuSub">I migliori tempi del mondo</span></button>
     </nav>
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
       <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>
@@ -547,6 +561,15 @@ td.r, th.r { text-align: right; }
       <div class="row"><button class="btn primary" data-act="onGo" id="onGo" type="button" data-i18n="on.go">VIA!</button><button class="btn" data-act="onLeave" type="button" data-i18n="on.leave">ESCI</button></div>
     </div>
     <p class="onmsg" id="onMsg"></p>
+  </section>
+  <section class="screen" id="scrLb" aria-label="Classifica">
+    <div class="spread">
+      <div><span class="kicker" data-i18n="lb.title">Classifica online</span><h2 data-i18n="lb.sub">Il miglior tempo di ogni pilota</h2></div>
+      <div class="row"><button class="btn primary" data-act="menu" type="button" data-i18n="common.menu">Menu</button></div>
+    </div>
+    <div class="row lbtabs"><button class="btn" data-lbt="citta" type="button" data-i18n="track.citta">Zona industriale</button><button class="btn" data-lbt="garda" type="button" data-i18n="track.garda">Lago di Garda</button></div>
+    <div class="lbbox"><table class="lbt" id="lbTable"></table></div>
+    <p class="onmsg" id="lbMsg"></p>
   </section>
   <section class="screen" id="scrPilots" aria-label="Piloti">
     <div class="spread">
@@ -657,6 +680,12 @@ const I18N = {
   'g.grip': ["Aderenza", "Grip", "Grip", "Agarre", "Adhérence"],
   'g.redline': ["Limitatore", "Rev limit", "Drehzahlgrenze", "Limitador", "Rupteur"],
   'g.rpm': ["{0} giri", "{0} rpm", "{0} U/min", "{0} rpm", "{0} tr/min"],
+  'cls.0': ["SERIE", "STOCK", "SERIE", "SERIE", "SÉRIE"],
+  'cls.1': ["SPORT", "SPORT", "SPORT", "SPORT", "SPORT"],
+  'cls.2': ["PRO", "PRO", "PRO", "PRO", "PRO"],
+  'cls.3': ["ELITE", "ELITE", "ELITE", "ÉLITE", "ÉLITE"],
+  'g.class': ["CLASSE {0} · {1}/30", "CLASS {0} · {1}/30", "KLASSE {0} · {1}/30", "CLASE {0} · {1}/30", "CLASSE {0} · {1}/30"],
+  'on.classNote': ["Sfide solo con auto della tua classe: {0}", "Races only with cars of your class: {0}", "Rennen nur mit Autos deiner Klasse: {0}", "Carreras solo con coches de tu clase: {0}", "Courses uniquement avec des voitures de ta classe : {0}"],
   'g.ideal': ["IDEALE {0} s", "BEST POSSIBLE {0} s", "IDEAL {0} s", "IDEAL {0} s", "IDÉAL {0} s"],
   'g.record': ["RECORD {0} s", "RECORD {0} s", "REKORD {0} s", "RÉCORD {0} s", "RECORD {0} s"],
   'g.dragHint': ["Trascina per spostare · giallo: misura · azzurro: ruota", "Drag to move · yellow: size · blue: rotate", "Ziehen: verschieben · Gelb: Größe · Blau: drehen", "Arrastra para mover · amarillo: tamaño · azul: girar", "Glisse pour déplacer · jaune : taille · bleu : tourner"],
@@ -715,6 +744,14 @@ const I18N = {
   'rim.k20': ["Argento stella", "Silver star", "Silber Stern", "Plata estrella", "Argent étoile"],
 
   /* multiplayer online */
+  'lb.title': ["Classifica online", "Online leaderboard", "Online-Rangliste", "Clasificación online", "Classement en ligne"],
+  'lb.sub': ["Il miglior tempo di ogni pilota, gare veloci e online", "Each driver's best time, quick and online races", "Bestzeit jedes Fahrers, schnelle und Online-Rennen", "El mejor tiempo de cada piloto, carreras rápidas y online", "Le meilleur temps de chaque pilote, courses rapides et en ligne"],
+  'lb.menuSub': ["I migliori tempi del mondo", "The best times in the world", "Die besten Zeiten der Welt", "Los mejores tiempos del mundo", "Les meilleurs temps du monde"],
+  'lb.loading': ["Carico la classifica…", "Loading leaderboard…", "Lade Rangliste…", "Cargando clasificación…", "Chargement du classement…"],
+  'lb.empty': ["Ancora nessun tempo: il primo puoi essere tu!", "No times yet: be the first!", "Noch keine Zeiten: sei der Erste!", "Aún no hay tiempos: ¡sé el primero!", "Pas encore de temps : sois le premier !"],
+  'lb.off': ["Classifica non raggiungibile: funziona sul sito del gioco", "Leaderboard unavailable: it works on the game's website", "Rangliste nicht erreichbar: funktioniert auf der Website des Spiels", "Clasificación no disponible: funciona en la web del juego", "Classement indisponible : il fonctionne sur le site du jeu"],
+  'lb.pos': ["Classifica online: {0}° posto", "Online leaderboard: #{0}", "Online-Rangliste: Platz {0}", "Clasificación online: {0}.º puesto", "Classement en ligne : {0}e place"],
+  'lb.online': ["{0} online", "{0} online", "{0} online", "{0} online", "{0} en ligne"],
   'menu.online': ["ONLINE", "ONLINE", "ONLINE", "ONLINE", "EN LIGNE"],
   'menu.onlineSub': ["2-4 piloti veri", "2-4 real drivers", "2-4 echte Fahrer", "2-4 pilotos reales", "2-4 vrais pilotes"],
   'on.title': ["Sfida altri piloti in diretta", "Race real drivers live", "Fahre live gegen echte Fahrer", "Desafía a pilotos reales en directo", "Affronte de vrais pilotes en direct"],
@@ -1063,7 +1100,7 @@ const SIM = (function () {
 
   function shiftCenter(car) { return car.redline - 950; }
   /* zona verde del cambio: a ogni marcia sale un poco verso i giri alti e si stringe */
-  const ZONE_UP = 70, ZONE_NARROW = 0.07;
+  const ZONE_UP = 90, ZONE_NARROW = 0.12;
   function shiftZone(car, cfg, gear) {
     const g = Math.max(0, Math.min(4, (gear || 1) - 1));
     const w = cfg.band * car.zoneMul * (1 - ZONE_NARROW * g), c = shiftCenter(car) + ZONE_UP * g;
@@ -1200,8 +1237,15 @@ const SIM = (function () {
     } else if (r.finished) {
       /* dopo il traguardo: 2 s col piede alzato (solo aria e freno motore), poi una frenata dolce */
       r.postT = (r.postT || 0) + dt;
-      F = r.v <= 0 ? 0 : -car.m * (r.postT < 2 ? 0.5 : 3.0);
-      r.rpm += (Math.max(car.idle, r.v * k * rat[r.gear - 1] * 0.7) - r.rpm) * Math.min(1, dt * 4);
+      F = r.v <= 0 ? 0 : -car.m * (r.postT < 1.2 ? 0.6 : 3.4);
+      /* scalate: una marcia giù ogni mezzo secondo, con la doppietta (colpo di gas) e lo scoppio dallo scarico */
+      r.downT = (r.downT || 0) - dt;
+      if (r.postT > 0.7 && r.gear > 2 && r.v > 4 && r.downT <= 0) {
+        r.gear--; r.downT = 0.5;
+        r.rpm = Math.min(car.redline - 200, r.v * k * rat[r.gear - 1] + 900);
+        r.events.push({ t: 'down' });
+      }
+      r.rpm += (Math.max(car.idle, r.v * k * rat[r.gear - 1] * 0.85) - r.rpm) * Math.min(1, dt * 3);
       r.onLimiter = false;
     } else if (r.shiftT > 0) {
       r.shiftT -= dt;
@@ -1292,7 +1336,7 @@ const SIM = (function () {
     { id: 'nitro', name: 'Nitro', desc: 'una spinta del 30% una volta a gara: 1,2 / 1,8 / 2,5 secondi' },
     { id: 'motore', name: 'Motore', desc: '+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere' }
   ];
-  const MOD_COST = [200, 350, 550];
+  const MOD_COST = [500, 1200, 2500];
   function buildCar(base, mods) {
     mods = mods || {};
     const L = id => Math.max(0, Math.min(3, mods[id] | 0));
@@ -1327,7 +1371,10 @@ const SIM = (function () {
     if (!r.car.nitro || r.nitroUsed || !r.launched || r.finished || r.blown) return false;
     r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro]; return true;
   }
-  return { nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
+  /* scala dei potenziamenti: somma dei livelli (0-30) e classe, usata anche per il matchmaking online */
+  function modScore(mods) { return MODS.reduce((s, m) => s + Math.max(0, Math.min(3, (mods || {})[m.id] | 0)), 0); }
+  function modClass(mods) { const s = modScore(mods); return s <= 5 ? 0 : s <= 13 ? 1 : s <= 21 ? 2 : 3; }
+  return { modScore, modClass, nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
     makeRacer, aiPrepare, stepPre, launch, tryShift, stepRace, idealRun, gauss };
 })();
 if (typeof module !== 'undefined') module.exports = SIM;
@@ -1388,7 +1435,12 @@ const NET = (function () {
       close: () => { try { ch.untrack(); } catch (e) { } sb.removeChannel(ch); }
     });
   }
-  return { channel, myId, LOCAL };
+  /* classifica online: tabella zsr_times e vista zsr_best (un tempo per pilota) su Supabase */
+  async function client() { await loadScript('lib/supabase.js'); if (!sb) sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } }); return sb; }
+  async function submitTime(row) { const c = await client(); const { error } = await c.from('zsr_times').insert(row); if (error) throw error; }
+  async function topTimes(track, n) { const c = await client(); const { data, error } = await c.from('zsr_best').select('name,pilot,car,time,cls,online').eq('track', track).order('time', { ascending: true }).limit(n || 20); if (error) throw error; return data || []; }
+  async function rankOf(track, time) { const c = await client(); const { count, error } = await c.from('zsr_best').select('name', { count: 'exact', head: true }).eq('track', track).lt('time', time); if (error) throw error; return (count || 0) + 1; }
+  return { channel, myId, LOCAL, submitTime, topTimes, rankOf };
 })();
 </script>
 <script>/* ============================================================
@@ -3664,7 +3716,7 @@ const RENDER = (function () {
     if (mode !== 'career' && (od ? od.track : save.track) === 'garda') G.cfg.dist = 804;
     const wantLight = od ? od.light : mode === 'career' && TAPPE[G.tappa - 1].night ? 'notte' : save.light;
     const wantTrack = od ? od.track : mode === 'career' ? (TAPPE[G.tappa - 1].track || 'citta') : save.track;
-    scene(wantTrack, wantLight);
+    scene(wantTrack, wantLight); G.lightTrack = wantTrack;
     if (!od) G.setup = reuse && G.setup ? G.setup : makeSetup();
     const b = od ? buildOnlineRacers(G.cfg, od) : buildRacers(G.cfg, G.setup);
     G.racers = b.list; G.player = b.p; G.dist = G.cfg.dist;
@@ -3739,6 +3791,7 @@ const RENDER = (function () {
         r.events.forEach(ev => {
           if (r === p && ev.t === 'blown') { AUDIO.fx('blown'); setMsg(T('race.blown'), '#ff4b33', T('race.blownHint'), 2); }
           if (r === p && ev.t === 'finish') AUDIO.fx('finish');
+          if (ev.t === 'down') { r.flameT = 0.3; if (r === p) { AUDIO.fx('backfire'); AUDIO.fx('shift'); } }
           if (ev.t === 'finish' && !cheer.done) { cheer.done = true; cheer.b = 1; AUDIO.fx('cheer'); }
         });
         r.events.length = 0;
@@ -3866,7 +3919,7 @@ const RENDER = (function () {
   const ON = { net: null, quick: null, qT: null, code: null, peers: [], joinedAt: 0, inRace: false, expect: 0, openedAt: 0, autoDone: false, states: {}, joinCheck: false };
   const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const newCode = () => Array.from({ length: 5 }, () => LETTERS[(Math.random() * LETTERS.length) | 0]).join('');
-  const onMe = () => ({ id: NET.myId, name: pilotName(save.pilot).slice(0, 14), pilot: save.pilot, car: save.car, cosm: cosmFor(save.car), at: ON.joinedAt, inRace: ON.inRace });
+  const onMe = () => ({ cls: SIM.modClass(save.cars[save.car].mods), id: NET.myId, name: pilotName(save.pilot).slice(0, 14), pilot: save.pilot, car: save.car, cosm: cosmFor(save.car), at: ON.joinedAt, inRace: ON.inRace });
   const onSorted = () => ON.peers.slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
   const onIsHost = () => { const s = onSorted(); return !!s.length && s[0].id === NET.myId; };
   function onMsg(t) { $('onMsg').textContent = t || ''; }
@@ -3882,7 +3935,7 @@ const RENDER = (function () {
       const p = s[i];
       if (!p) { h += '<div class="onslot empty"><b>' + T('on.free') + '</b></div>'; continue; }
       const c = CAR(p.car) || CAR(ROSTER[0]);
-      h += '<div class="onslot' + (p.id === NET.myId ? ' me' : '') + '"><img alt="" src="' + (PILOTS[p.pilot] || PILOTS[0]) + '"><b></b><small>' + carName(c) + (i === 0 ? ' · ' + T('on.host') : '') + '</small></div>';
+      h += '<div class="onslot' + (p.id === NET.myId ? ' me' : '') + '"><img alt="" src="' + (PILOTS[p.pilot] || PILOTS[0]) + '"><b></b><small>' + carName(c) + ' · ' + T('cls.' + (p.cls | 0)) + (i === 0 ? ' · ' + T('on.host') : '') + '</small></div>';
     }
     $('onSlots').innerHTML = h;
     $('onSlots').querySelectorAll('.onslot:not(.empty) b').forEach((el, i) => { el.textContent = s[i].name; });
@@ -3934,7 +3987,8 @@ const RENDER = (function () {
   async function onQuick(N) {
     onLeaveRoom(); onView(false); onMsg(T('on.searching'));
     let q;
-    try { q = await NET.channel('quick' + N); } catch (e) { onMsg(T('on.fail')); return; }
+    const cls = SIM.modClass(save.cars[save.car].mods);
+    try { q = await NET.channel('quick' + N + '-c' + cls); } catch (e) { onMsg(T('on.fail')); return; }
     ON.quick = q;
     const me = { id: NET.myId, at: Date.now() }; let list = [];
     q.on('match', d => { if (d && d.ids && d.ids.includes(NET.myId) && ON.quick === q) { onLeaveRoom(); onOpenRoom(d.code, d.ids.length); } });
@@ -3943,7 +3997,7 @@ const RENDER = (function () {
     ON.qT = setInterval(() => {
       if (ON.quick !== q) { clearInterval(ON.qT); return; }
       const s = list.slice().sort((a, b) => a.at - b.at);
-      onMsg(T('on.searchN', N) + ' · ' + s.length + '/' + N);
+      onMsg(T('on.searchN', N) + ' · ' + s.length + '/' + N + ' · ' + T('on.classNote', T('cls.' + cls)));
       if (s.length && s[0].id === NET.myId && s.length >= N) {
         const ids = s.slice(0, N).map(x => x.id), code = newCode();
         q.send('match', { code: code, ids: ids });
@@ -4012,6 +4066,7 @@ const RENDER = (function () {
       }
       r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0; r.nitroT = b.nt ? 0.2 : 0;
       if (b.n > r.nShift) { r.nShift = b.n; r.flameT = 0.4; }
+      if (r.finished && b.g < r.gear) r.flameT = 0.3;
       if (b.bl && !r.blown) r.blown = true;
       r.time = Math.min(t, b.ft || t);
     }
@@ -4027,8 +4082,41 @@ const RENDER = (function () {
   }
   function onBackToRoom() { G.phase = 'menu'; G.mode = 'quick'; ON.inRace = false; onTrack(); goMenu(); onOpenScreen(); }
 
+  /* ---------- classifica online ---------- */
+  let lbTrack = 'citta', lastSent = null;
+  document.querySelectorAll('[data-lbt]').forEach(b => b.addEventListener('click', () => { AUDIO.fx('click'); showLb(b.dataset.lbt); }));
+  async function showLb(track) {
+    lbTrack = track; showScreen('scrLb');
+    document.querySelectorAll('[data-lbt]').forEach(b => b.classList.toggle('on', b.dataset.lbt === track));
+    $('lbTable').innerHTML = ''; $('lbMsg').textContent = T('lb.loading');
+    let rows;
+    try { rows = await NET.topTimes(track, 20); } catch (e) { $('lbMsg').textContent = T('lb.off'); return; }
+    if (lbTrack !== track) return;
+    $('lbMsg').textContent = rows.length ? '' : T('lb.empty');
+    const me = pilotName(save.pilot).toLowerCase();
+    $('lbTable').innerHTML = rows.map((r, i) => '<tr class="' + (r.name.toLowerCase() === me ? 'me' : '') + '"><td class="p">' + (i + 1) + '</td><td><img alt="" src="' + (PILOTS[r.pilot] || PILOTS[0]) + '"><span></span></td><td class="muted">' + carName(CAR(r.car)) + '</td><td class="r">' + r.time.toFixed(3) + ' s</td></tr>').join('');
+    $('lbTable').querySelectorAll('tr td span').forEach((el, i) => { el.textContent = rows[i].name; });
+  }
+  /* a fine gara il tempo va in classifica (gara veloce e online, sulla distanza della pista) */
+  function sendTime(p) {
+    const track = G.lightTrack, dist = G.dist;
+    if (!p.finished || (G.mode !== 'quick' && G.mode !== 'online') || !((track === 'citta' && dist === 402) || (track === 'garda' && dist === 804))) return;
+    const row = { name: pilotName(save.pilot).slice(0, 14) || 'Pilota', pilot: save.pilot | 0, car: save.car, track: track, dist: dist, time: +p.finishTime.toFixed(3), cls: SIM.modClass(save.cars[save.car].mods), online: G.mode === 'online', ver: 'web' };
+    NET.submitTime(row).then(() => NET.rankOf(track, row.time)).then(pos => {
+      if (G.phase === 'results') { const el = document.createElement('div'); el.className = 'lbres'; el.textContent = T('lb.pos', pos); el.style.cssText = 'margin-top:0.3em;color:#9fd8ff;font-weight:800'; $('rSub').after(el); }
+    }).catch(() => { });
+  }
+  /* contatore dei piloti collegati (presence sul canale comune) */
+  async function netCounter() {
+    try {
+      const ch = await NET.channel('online');
+      ch.onPeers(list => { const n = list.filter(Boolean).length; $('netCount').hidden = n < 1; $('netCount').textContent = T('lb.online', n); });
+      ch.track({ id: NET.myId, at: Date.now() });
+    } catch (e) { }
+  }
+
   /* ---------- schermate ---------- */
-  const SCREENS = ['scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
+  const SCREENS = ['scrLb', 'scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
   function showScreen(id) {
     SCREENS.forEach(s => $(s).classList.toggle('on', s === id));
     if (id) { $('touch').classList.remove('on'); $('corner').classList.remove('on'); }
@@ -4058,6 +4146,7 @@ const RENDER = (function () {
     else if (a === 'pilots') { renderPilots(); showScreen('scrPilots'); }
     else if (a === 'menu') { if (G.mode === 'online') onLeaveRoom(); goMenu(); }
     else if (a === 'online') { G.phase = 'menu'; onOpenScreen(); }
+    else if (a === 'lb') { G.phase = 'menu'; showLb(save.track === 'garda' ? 'garda' : 'citta'); }
     else if (a === 'onExit') { onLeaveRoom(); goMenu(); }
     else if (a === 'onQuick') onQuick(+b.dataset.n || 2);
     else if (a === 'onCreate') onOpenRoom(newCode(), 0);
@@ -4106,6 +4195,7 @@ const RENDER = (function () {
       return '<div><div class="gst"><span>' + r[0] + '</span><em>' + (r[5] || r[2] + r[4]) + '</em></div><div class="gbar"><i style="width:' + w1 + '%"></i><i class="base" style="width:' + w0 + '%"></i></div></div>';
     }).join('');
     const best = save.best[id + '_' + cfg.dist];
+    { const ms = save.cars[save.car].mods, sc = SIM.modScore(ms); h += '<div class="et" style="color:#9fd8ff">' + T('g.class', T('cls.' + SIM.modClass(ms)), sc) + '</div>'; }
     h += '<div class="et">' + T('g.ideal', et1.toFixed(2)) + (best ? ' · ' + T('g.record', best.toFixed(2)) : '') + '</div>';
     $('gStats').innerHTML = h;
     drawPreview(built, slot.cosm);
@@ -4429,6 +4519,7 @@ const RENDER = (function () {
     const perf = p.shifts.filter(s => s.q === 'perfetta').length;
     const earn = pos ? reward(pos, G.mode === 'career' ? G.tappa : 1) + perf * 20 : 0;
     if (G.mode === 'online') { ON.inRace = false; onTrack(); }
+    document.querySelectorAll('.lbres').forEach(e => e.remove()); sendTime(p);
     save.credits += earn;
     let record = false;
     if (p.finished) {
@@ -4504,7 +4595,7 @@ const RENDER = (function () {
   function boot() {
     paperTex(); fitCanvas();
     scene(save.track, save.light);
-    syncSoundBtn(); goMenu();
+    syncSoundBtn(); goMenu(); setTimeout(netCounter, 1500);
     const rm = (location.search.match(/[?&]room=([A-Za-z]{5})/) || [])[1];
     if (rm) { onOpenScreen(); onOpenRoom(rm.toUpperCase(), 0, true); }
     requestAnimationFrame(t => { last = t; requestAnimationFrame(loop); });

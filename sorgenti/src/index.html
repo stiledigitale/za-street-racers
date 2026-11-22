@@ -410,6 +410,19 @@ td.r, th.r { text-align: right; }
   #scrCareer .tappa .d { font-size: 0.75em; }
 }
 
+/* classifica online e contatore */
+#scrLb { padding: 1em 1.6em; overflow: hidden; }
+#scrLb h2 { font-size: 1.6em; }
+.lbtabs .btn { font-size: 1em; padding: 0.4em 1em; } .lbtabs .btn.on { --fill: var(--yellow); color: var(--ink); }
+.lbbox { margin-top: 0.7em; height: 64cqh; overflow: hidden; columns: 2; column-gap: 1.2em; }
+.lbt { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+.lbt td { padding: 0.18em 0.4em; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+.lbt td.p { font-family: var(--f-d); font-weight: 900; width: 2em; color: #ffd84a; } .lbt td.r { text-align: right; font-family: var(--f-d); font-weight: 800; }
+.lbt img { width: 1.6em; height: 1.6em; border-radius: 0.3em; object-fit: cover; object-position: top; vertical-align: middle; margin-right: 0.4em; background: #f8f6ee; }
+.lbt tr.me td { background: rgba(255,216,74,0.18); }
+#netCount { position: absolute; top: 10.4cqh; right: 1.4cqw; z-index: 51; font: 800 1.7cqh var(--f-b); color: #fff; background: rgba(13,10,18,0.75); border: 2px solid var(--ink); border-radius: 1em; padding: 0.15em 0.6em; pointer-events: none; }
+#netCount::before { content: ''; display: inline-block; width: 0.6em; height: 0.6em; border-radius: 50%; background: #3cf07a; margin-right: 0.35em; box-shadow: 0 0 0.4em #3cf07a; vertical-align: 0.05em; }
+#netCount[hidden] { display: none; }
 /* multiplayer online */
 .monline { position: absolute; right: 2cqw; bottom: 23cqh; width: 26cqw; height: 11cqh; flex-direction: column; gap: 0; font-size: 1em; }
 .monline b { font-size: 1.5em; line-height: 1; } .monline span { font-size: 0.75em; font-family: var(--f-b); font-style: normal; font-weight: 700; }
@@ -439,6 +452,7 @@ td.r, th.r { text-align: right; }
     <button id="btnShift" class="imgbtn" type="button" aria-label="Cambio" data-i18n-aria="btn.shift"><img alt="" id="imgShift"><span data-i18n="btn.shift">CAMBIO</span></button>
   </div>
   <button class="gbtn dark mfull" id="btnFull" type="button" aria-label="Schermo intero">⛶</button>
+  <div id="netCount" hidden></div>
   <div id="corner">
     <button id="btnPause" class="imgbtn" type="button" aria-label="Pausa" data-i18n-aria="btn.pause"><img alt="" id="imgPause"></button>
     <button id="btnSound" type="button" data-i18n="audio.on">AUDIO ON</button>
@@ -459,7 +473,7 @@ td.r, th.r { text-align: right; }
       <button class="gbtn purple mb" data-act="career" type="button"><b data-i18n="menu.career">Carriera</b><span data-i18n="menu.careerSub">Sei tappe, sempre più strette</span></button>
       <button class="gbtn blue mb" data-act="garage" type="button"><b data-i18n="menu.garage">Garage</b><span data-i18n="menu.garageSub">Elaborazioni, colori, cerchi</span></button>
       <button class="gbtn green mb" data-act="pilots" type="button"><b data-i18n="p.kicker">Piloti</b><span data-i18n="p.title">Scegli il tuo pilota</span></button>
-      <button class="gbtn dark mb off" data-act="rules" type="button" disabled><b data-i18n="menu.rules">Regole</b><span data-i18n="menu.rulesSub">Valori, luce e audio</span></button>
+      <button class="gbtn dark mb" data-act="lb" type="button"><b data-i18n="lb.title">Classifica online</b><span data-i18n="lb.menuSub">I migliori tempi del mondo</span></button>
     </nav>
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
       <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>
@@ -547,6 +561,15 @@ td.r, th.r { text-align: right; }
       <div class="row"><button class="btn primary" data-act="onGo" id="onGo" type="button" data-i18n="on.go">VIA!</button><button class="btn" data-act="onLeave" type="button" data-i18n="on.leave">ESCI</button></div>
     </div>
     <p class="onmsg" id="onMsg"></p>
+  </section>
+  <section class="screen" id="scrLb" aria-label="Classifica">
+    <div class="spread">
+      <div><span class="kicker" data-i18n="lb.title">Classifica online</span><h2 data-i18n="lb.sub">Il miglior tempo di ogni pilota</h2></div>
+      <div class="row"><button class="btn primary" data-act="menu" type="button" data-i18n="common.menu">Menu</button></div>
+    </div>
+    <div class="row lbtabs"><button class="btn" data-lbt="citta" type="button" data-i18n="track.citta">Zona industriale</button><button class="btn" data-lbt="garda" type="button" data-i18n="track.garda">Lago di Garda</button></div>
+    <div class="lbbox"><table class="lbt" id="lbTable"></table></div>
+    <p class="onmsg" id="lbMsg"></p>
   </section>
   <section class="screen" id="scrPilots" aria-label="Piloti">
     <div class="spread">

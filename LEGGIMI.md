@@ -32,3 +32,10 @@ Come Tactical Racing Simulator: **Supabase Realtime**, progetto `stiledigitale_g
 - Ognuno simula solo la propria auto e manda posizione e tempo di gara 20 volte al secondo. Gli avversari si disegnano dove erano allo STESSO tempo di gara del giocatore (ognuno parte dal suo verde): chi è davanti sullo schermo è chi è davanti nei tempi, anche con il ritardo della rete. Chi esce durante la gara si ferma ("ha lasciato la gara").
 - Fine gara: crediti come la gara veloce, **Torna alla stanza** per la rivincita.
 - Prove: `?net=local` simula la rete tra le schede dello stesso browser. Nell'artefatto di claude.ai il multiplayer non funziona (solo sul sito).
+
+## Classifica online e piloti collegati (22/11/2026)
+- Tabella Supabase `zsr_times` (progetto stiledigitale_games) e vista `zsr_best` con il miglior tempo di ogni pilota.
+- Il tempo va in classifica a fine gara veloce o online, sulla distanza della pista (Zona industriale 402 m, Lago di Garda 804 m); le gare contro CPU in carriera no.
+- Pulsante "Classifica online" nel menu (al posto di Regole), con le schede delle due piste e i primi 20.
+- In alto a destra, sotto lo schermo intero, il numero dei piloti collegati (presence sul canale `zsr-online`).
+- Inoltre: scalate dopo il traguardo, zona verde più stretta a ogni marcia, classi di potenziamento (Serie, Sport, Pro, Élite) usate dalla partita veloce online, potenziamenti più cari (500 / 1200 / 2500).

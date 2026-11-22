@@ -221,7 +221,7 @@
     if (mode !== 'career' && (od ? od.track : save.track) === 'garda') G.cfg.dist = 804;
     const wantLight = od ? od.light : mode === 'career' && TAPPE[G.tappa - 1].night ? 'notte' : save.light;
     const wantTrack = od ? od.track : mode === 'career' ? (TAPPE[G.tappa - 1].track || 'citta') : save.track;
-    scene(wantTrack, wantLight);
+    scene(wantTrack, wantLight); G.lightTrack = wantTrack;
     if (!od) G.setup = reuse && G.setup ? G.setup : makeSetup();
     const b = od ? buildOnlineRacers(G.cfg, od) : buildRacers(G.cfg, G.setup);
     G.racers = b.list; G.player = b.p; G.dist = G.cfg.dist;
@@ -296,6 +296,7 @@
         r.events.forEach(ev => {
           if (r === p && ev.t === 'blown') { AUDIO.fx('blown'); setMsg(T('race.blown'), '#ff4b33', T('race.blownHint'), 2); }
           if (r === p && ev.t === 'finish') AUDIO.fx('finish');
+          if (ev.t === 'down') { r.flameT = 0.3; if (r === p) { AUDIO.fx('backfire'); AUDIO.fx('shift'); } }
           if (ev.t === 'finish' && !cheer.done) { cheer.done = true; cheer.b = 1; AUDIO.fx('cheer'); }
         });
         r.events.length = 0;
@@ -423,7 +424,7 @@
   const ON = { net: null, quick: null, qT: null, code: null, peers: [], joinedAt: 0, inRace: false, expect: 0, openedAt: 0, autoDone: false, states: {}, joinCheck: false };
   const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const newCode = () => Array.from({ length: 5 }, () => LETTERS[(Math.random() * LETTERS.length) | 0]).join('');
-  const onMe = () => ({ id: NET.myId, name: pilotName(save.pilot).slice(0, 14), pilot: save.pilot, car: save.car, cosm: cosmFor(save.car), at: ON.joinedAt, inRace: ON.inRace });
+  const onMe = () => ({ cls: SIM.modClass(save.cars[save.car].mods), id: NET.myId, name: pilotName(save.pilot).slice(0, 14), pilot: save.pilot, car: save.car, cosm: cosmFor(save.car), at: ON.joinedAt, inRace: ON.inRace });
   const onSorted = () => ON.peers.slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
   const onIsHost = () => { const s = onSorted(); return !!s.length && s[0].id === NET.myId; };
   function onMsg(t) { $('onMsg').textContent = t || ''; }
@@ -439,7 +440,7 @@
       const p = s[i];
       if (!p) { h += '<div class="onslot empty"><b>' + T('on.free') + '</b></div>'; continue; }
       const c = CAR(p.car) || CAR(ROSTER[0]);
-      h += '<div class="onslot' + (p.id === NET.myId ? ' me' : '') + '"><img alt="" src="' + (PILOTS[p.pilot] || PILOTS[0]) + '"><b></b><small>' + carName(c) + (i === 0 ? ' · ' + T('on.host') : '') + '</small></div>';
+      h += '<div class="onslot' + (p.id === NET.myId ? ' me' : '') + '"><img alt="" src="' + (PILOTS[p.pilot] || PILOTS[0]) + '"><b></b><small>' + carName(c) + ' · ' + T('cls.' + (p.cls | 0)) + (i === 0 ? ' · ' + T('on.host') : '') + '</small></div>';
     }
     $('onSlots').innerHTML = h;
     $('onSlots').querySelectorAll('.onslot:not(.empty) b').forEach((el, i) => { el.textContent = s[i].name; });
@@ -491,7 +492,8 @@
   async function onQuick(N) {
     onLeaveRoom(); onView(false); onMsg(T('on.searching'));
     let q;
-    try { q = await NET.channel('quick' + N); } catch (e) { onMsg(T('on.fail')); return; }
+    const cls = SIM.modClass(save.cars[save.car].mods);
+    try { q = await NET.channel('quick' + N + '-c' + cls); } catch (e) { onMsg(T('on.fail')); return; }
     ON.quick = q;
     const me = { id: NET.myId, at: Date.now() }; let list = [];
     q.on('match', d => { if (d && d.ids && d.ids.includes(NET.myId) && ON.quick === q) { onLeaveRoom(); onOpenRoom(d.code, d.ids.length); } });
@@ -500,7 +502,7 @@
     ON.qT = setInterval(() => {
       if (ON.quick !== q) { clearInterval(ON.qT); return; }
       const s = list.slice().sort((a, b) => a.at - b.at);
-      onMsg(T('on.searchN', N) + ' · ' + s.length + '/' + N);
+      onMsg(T('on.searchN', N) + ' · ' + s.length + '/' + N + ' · ' + T('on.classNote', T('cls.' + cls)));
       if (s.length && s[0].id === NET.myId && s.length >= N) {
         const ids = s.slice(0, N).map(x => x.id), code = newCode();
         q.send('match', { code: code, ids: ids });
@@ -569,6 +571,7 @@
       }
       r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0; r.nitroT = b.nt ? 0.2 : 0;
       if (b.n > r.nShift) { r.nShift = b.n; r.flameT = 0.4; }
+      if (r.finished && b.g < r.gear) r.flameT = 0.3;
       if (b.bl && !r.blown) r.blown = true;
       r.time = Math.min(t, b.ft || t);
     }
@@ -584,8 +587,41 @@
   }
   function onBackToRoom() { G.phase = 'menu'; G.mode = 'quick'; ON.inRace = false; onTrack(); goMenu(); onOpenScreen(); }
 
+  /* ---------- classifica online ---------- */
+  let lbTrack = 'citta', lastSent = null;
+  document.querySelectorAll('[data-lbt]').forEach(b => b.addEventListener('click', () => { AUDIO.fx('click'); showLb(b.dataset.lbt); }));
+  async function showLb(track) {
+    lbTrack = track; showScreen('scrLb');
+    document.querySelectorAll('[data-lbt]').forEach(b => b.classList.toggle('on', b.dataset.lbt === track));
+    $('lbTable').innerHTML = ''; $('lbMsg').textContent = T('lb.loading');
+    let rows;
+    try { rows = await NET.topTimes(track, 20); } catch (e) { $('lbMsg').textContent = T('lb.off'); return; }
+    if (lbTrack !== track) return;
+    $('lbMsg').textContent = rows.length ? '' : T('lb.empty');
+    const me = pilotName(save.pilot).toLowerCase();
+    $('lbTable').innerHTML = rows.map((r, i) => '<tr class="' + (r.name.toLowerCase() === me ? 'me' : '') + '"><td class="p">' + (i + 1) + '</td><td><img alt="" src="' + (PILOTS[r.pilot] || PILOTS[0]) + '"><span></span></td><td class="muted">' + carName(CAR(r.car)) + '</td><td class="r">' + r.time.toFixed(3) + ' s</td></tr>').join('');
+    $('lbTable').querySelectorAll('tr td span').forEach((el, i) => { el.textContent = rows[i].name; });
+  }
+  /* a fine gara il tempo va in classifica (gara veloce e online, sulla distanza della pista) */
+  function sendTime(p) {
+    const track = G.lightTrack, dist = G.dist;
+    if (!p.finished || (G.mode !== 'quick' && G.mode !== 'online') || !((track === 'citta' && dist === 402) || (track === 'garda' && dist === 804))) return;
+    const row = { name: pilotName(save.pilot).slice(0, 14) || 'Pilota', pilot: save.pilot | 0, car: save.car, track: track, dist: dist, time: +p.finishTime.toFixed(3), cls: SIM.modClass(save.cars[save.car].mods), online: G.mode === 'online', ver: 'web' };
+    NET.submitTime(row).then(() => NET.rankOf(track, row.time)).then(pos => {
+      if (G.phase === 'results') { const el = document.createElement('div'); el.className = 'lbres'; el.textContent = T('lb.pos', pos); el.style.cssText = 'margin-top:0.3em;color:#9fd8ff;font-weight:800'; $('rSub').after(el); }
+    }).catch(() => { });
+  }
+  /* contatore dei piloti collegati (presence sul canale comune) */
+  async function netCounter() {
+    try {
+      const ch = await NET.channel('online');
+      ch.onPeers(list => { const n = list.filter(Boolean).length; $('netCount').hidden = n < 1; $('netCount').textContent = T('lb.online', n); });
+      ch.track({ id: NET.myId, at: Date.now() });
+    } catch (e) { }
+  }
+
   /* ---------- schermate ---------- */
-  const SCREENS = ['scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
+  const SCREENS = ['scrLb', 'scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
   function showScreen(id) {
     SCREENS.forEach(s => $(s).classList.toggle('on', s === id));
     if (id) { $('touch').classList.remove('on'); $('corner').classList.remove('on'); }
@@ -615,6 +651,7 @@
     else if (a === 'pilots') { renderPilots(); showScreen('scrPilots'); }
     else if (a === 'menu') { if (G.mode === 'online') onLeaveRoom(); goMenu(); }
     else if (a === 'online') { G.phase = 'menu'; onOpenScreen(); }
+    else if (a === 'lb') { G.phase = 'menu'; showLb(save.track === 'garda' ? 'garda' : 'citta'); }
     else if (a === 'onExit') { onLeaveRoom(); goMenu(); }
     else if (a === 'onQuick') onQuick(+b.dataset.n || 2);
     else if (a === 'onCreate') onOpenRoom(newCode(), 0);
@@ -663,6 +700,7 @@
       return '<div><div class="gst"><span>' + r[0] + '</span><em>' + (r[5] || r[2] + r[4]) + '</em></div><div class="gbar"><i style="width:' + w1 + '%"></i><i class="base" style="width:' + w0 + '%"></i></div></div>';
     }).join('');
     const best = save.best[id + '_' + cfg.dist];
+    { const ms = save.cars[save.car].mods, sc = SIM.modScore(ms); h += '<div class="et" style="color:#9fd8ff">' + T('g.class', T('cls.' + SIM.modClass(ms)), sc) + '</div>'; }
     h += '<div class="et">' + T('g.ideal', et1.toFixed(2)) + (best ? ' · ' + T('g.record', best.toFixed(2)) : '') + '</div>';
     $('gStats').innerHTML = h;
     drawPreview(built, slot.cosm);
@@ -986,6 +1024,7 @@
     const perf = p.shifts.filter(s => s.q === 'perfetta').length;
     const earn = pos ? reward(pos, G.mode === 'career' ? G.tappa : 1) + perf * 20 : 0;
     if (G.mode === 'online') { ON.inRace = false; onTrack(); }
+    document.querySelectorAll('.lbres').forEach(e => e.remove()); sendTime(p);
     save.credits += earn;
     let record = false;
     if (p.finished) {
@@ -1061,7 +1100,7 @@
   function boot() {
     paperTex(); fitCanvas();
     scene(save.track, save.light);
-    syncSoundBtn(); goMenu();
+    syncSoundBtn(); goMenu(); setTimeout(netCounter, 1500);
     const rm = (location.search.match(/[?&]room=([A-Za-z]{5})/) || [])[1];
     if (rm) { onOpenScreen(); onOpenRoom(rm.toUpperCase(), 0, true); }
     requestAnimationFrame(t => { last = t; requestAnimationFrame(loop); });

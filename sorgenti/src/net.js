@@ -54,5 +54,10 @@ const NET = (function () {
       close: () => { try { ch.untrack(); } catch (e) { } sb.removeChannel(ch); }
     });
   }
-  return { channel, myId, LOCAL };
+  /* classifica online: tabella zsr_times e vista zsr_best (un tempo per pilota) su Supabase */
+  async function client() { await loadScript('lib/supabase.js'); if (!sb) sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: false } }); return sb; }
+  async function submitTime(row) { const c = await client(); const { error } = await c.from('zsr_times').insert(row); if (error) throw error; }
+  async function topTimes(track, n) { const c = await client(); const { data, error } = await c.from('zsr_best').select('name,pilot,car,time,cls,online').eq('track', track).order('time', { ascending: true }).limit(n || 20); if (error) throw error; return data || []; }
+  async function rankOf(track, time) { const c = await client(); const { count, error } = await c.from('zsr_best').select('name', { count: 'exact', head: true }).eq('track', track).lt('time', time); if (error) throw error; return (count || 0) + 1; }
+  return { channel, myId, LOCAL, submitTime, topTimes, rankOf };
 })();
