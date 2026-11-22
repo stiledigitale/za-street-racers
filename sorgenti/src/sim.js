@@ -251,13 +251,14 @@ const SIM = (function () {
       F = T * ratio * car.eff / car.rw * cut;
       const limit = car.mu * car.m * G * car.wf * r.gripMul;
       if (F > limit) { r.spin = Math.min(1, F / limit - 1) * (r.gripMul < 1 ? 1 : 0.4); F = limit; }
-      F *= r.boostMul * r.penMul;
+      F *= r.boostMul * r.penMul * (r.nitroT > 0 ? 1.3 : 1);
       if (cut === 0) F = -car.m * 0.6;
       /* pilota CPU: cambia quando i giri raggiungono il suo bersaglio */
       if (r.ai && r.gear < 6 && !r.slipping) {
         if (r.onLimiter ? r.limT > r.ai.limDelay : rpm >= r.ai.shiftTarget) tryShift(r, cfg);
       }
     }
+    if (r.nitroT > 0) r.nitroT -= dt;
     const drag = 0.5 * RHO * car.cda * r.v * r.v + car.crr * car.m * G;
     r.a = (F - drag) / car.m;
     const v0 = r.v;
@@ -298,6 +299,7 @@ const SIM = (function () {
     { id: 'frizione', name: 'Frizione', desc: 'cambiate più rapide del 12%' },
     { id: 'pneumatici', name: 'Pneumatici', desc: 'più aderenza: meno pattinamento al via' },
     { id: 'peso', name: 'Alleggerimento', desc: '−3,5% di massa per livello' },
+    { id: 'nitro', name: 'Nitro', desc: 'una spinta del 30% una volta a gara: 1,2 / 1,8 / 2,5 secondi' },
     { id: 'motore', name: 'Motore', desc: '+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere' }
   ];
   const MOD_COST = [200, 350, 550];
@@ -317,6 +319,7 @@ const SIM = (function () {
     let mul = 1 + 0.03 * L('centralina') + 0.02 * L('scarico') + (base.turbo ? 0.05 : 0.04) * L('turbo') + (L('motore') === 3 ? 0.04 : 0);
     c.tq.forEach(p => { p[1] *= mul; if (p[0] > c.redline * 0.6) p[1] *= 1 + 0.035 * L('aspirazione'); });
     if (L('turbo')) c.turbo = true;
+    c.nitro = L('nitro');
     c.vs = c.vs.map(v => v * (1 - 0.03 * L('rapporti')));
     c.top = base.top * (1 - 0.02 * L('rapporti'));
     c.shiftMul = 1 - 0.12 * L('frizione');
@@ -328,7 +331,13 @@ const SIM = (function () {
     return c;
   }
 
-  return { G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
+  /* nitro: una volta a gara, dopo la partenza */
+  const NITRO_T = [0, 1.2, 1.8, 2.5];
+  function nitro(r) {
+    if (!r.car.nitro || r.nitroUsed || !r.launched || r.finished || r.blown) return false;
+    r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro]; return true;
+  }
+  return { nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
     makeRacer, aiPrepare, stepPre, launch, tryShift, stepRace, idealRun, gauss };
 })();
 if (typeof module !== 'undefined') module.exports = SIM;

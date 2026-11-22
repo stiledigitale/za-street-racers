@@ -28,6 +28,7 @@ body { display: flex; align-items: center; justify-content: center; touch-action
 #touch img, .imgbtn img { pointer-events: none; -webkit-user-drag: none; }
 #touch .imgbtn { touch-action: none; }
 #stage { position: relative; width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9)); aspect-ratio: 16 / 9; max-height: 100vh; max-height: 100dvh; container-type: size; background: #000; overflow: hidden; font-size: max(10px, 2.15cqh); }
+.mb.off { opacity: 0.4; pointer-events: none; filter: grayscale(0.6); }
 #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 button { font: inherit; color: inherit; cursor: pointer; }
 [hidden] { display: none !important; }
@@ -298,6 +299,10 @@ td.r, th.r { text-align: right; }
 #touch { position: absolute; inset: auto 0 0 0; display: none; justify-content: space-between; align-items: flex-end; padding: 0 1.5% 2.5%; pointer-events: none; }
 #touch.on { display: flex; justify-content: flex-end; }
 #btnShift { display: none !important; }
+.nitrobtn { pointer-events: auto; align-self: flex-end; margin-right: 1.5cqw; margin-bottom: 4cqh; order: 0; width: 15cqh; height: 15cqh; border-radius: 50%; border: 0.25em solid var(--ink); background: radial-gradient(circle at 35% 30%, #9ff3ff, #1aa7e0 55%, #0a5fa8); box-shadow: 0 0.3em 0 var(--ink); font-family: var(--f-d); font-style: italic; font-weight: 900; font-size: 2.6cqh; color: #fff; text-shadow: 0.08em 0.1em 0 var(--ink); touch-action: none; }
+.nitrobtn[hidden] { display: none; }
+.nitrobtn.used { filter: grayscale(1) brightness(0.6); }
+#corner .nitrobtn { display: none; }
 #touch .imgbtn { pointer-events: auto; width: 26cqh; }
 #btnGas.gone { visibility: hidden; }
 #corner { position: absolute; top: 25cqh; right: 1.4%; display: none; flex-direction: column; gap: 0.7em; align-items: center; }
@@ -429,6 +434,7 @@ td.r, th.r { text-align: right; }
   <canvas id="cv" width="1280" height="720" aria-label="Pista di ZA Street Racers"></canvas>
 
   <div id="touch">
+    <button id="btnNitro" class="nitrobtn" type="button" hidden><span data-i18n="btn.nitro">NITRO</span></button>
     <button id="btnGas" class="imgbtn" type="button" aria-label="Accelera" data-i18n-aria="btn.gas"><img alt="" id="imgGas"><span data-i18n="btn.gas">ACCELERA</span></button>
     <button id="btnShift" class="imgbtn" type="button" aria-label="Cambio" data-i18n-aria="btn.shift"><img alt="" id="imgShift"><span data-i18n="btn.shift">CAMBIO</span></button>
   </div>
@@ -453,7 +459,7 @@ td.r, th.r { text-align: right; }
       <button class="gbtn purple mb" data-act="career" type="button"><b data-i18n="menu.career">Carriera</b><span data-i18n="menu.careerSub">Sei tappe, sempre più strette</span></button>
       <button class="gbtn blue mb" data-act="garage" type="button"><b data-i18n="menu.garage">Garage</b><span data-i18n="menu.garageSub">Elaborazioni, colori, cerchi</span></button>
       <button class="gbtn green mb" data-act="pilots" type="button"><b data-i18n="p.kicker">Piloti</b><span data-i18n="p.title">Scegli il tuo pilota</span></button>
-      <button class="gbtn dark mb" data-act="rules" type="button"><b data-i18n="menu.rules">Regole</b><span data-i18n="menu.rulesSub">Valori, luce e audio</span></button>
+      <button class="gbtn dark mb off" data-act="rules" type="button" disabled><b data-i18n="menu.rules">Regole</b><span data-i18n="menu.rulesSub">Valori, luce e audio</span></button>
     </nav>
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
       <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>
@@ -776,6 +782,12 @@ const I18N = {
   'mod.peso': ["Alleggerimento", "Weight reduction", "Gewichtsreduktion", "Aligeramiento", "Allègement"],
   'mod.peso.d': ["−3,5% di massa per livello", "−3.5% weight per level", "−3,5% Masse pro Stufe", "−3,5% de peso por nivel", "−3,5% de masse par niveau"],
   'mod.motore': ["Motore", "Engine", "Motor", "Motor", "Moteur"],
+  'mod.nitro': ["Nitro", "Nitro", "Nitro", "Nitro", "Nitro"],
+  'mod.nitro.d': ["+30% di spinta una volta a gara (1,2 / 1,8 / 2,5 s)", "+30% thrust once per race (1.2 / 1.8 / 2.5 s)", "+30% Schub einmal pro Rennen (1,2 / 1,8 / 2,5 s)", "+30% de empuje una vez por carrera (1,2 / 1,8 / 2,5 s)", "+30% de poussée une fois par course (1,2 / 1,8 / 2,5 s)"],
+  'btn.nitro': ["NITRO", "NITRO", "NITRO", "NITRO", "NITRO"],
+  'race.nitro': ["NITRO!", "NITRO!", "NITRO!", "¡NITRO!", "NITRO !"],
+  'race.nitroHint': ["+30% per {0} s", "+30% for {0} s", "+30% für {0} s", "+30% durante {0} s", "+30% pendant {0} s"],
+  'key.nitro': ["N = nitro", "N = nitro", "N = Nitro", "N = nitro", "N = nitro"],
   'mod.motore.d': ["+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere", "+250 rpm rev limit. Level 3, pushed engine: +4% torque, but below 10% health it can blow", "+250 U/min Drehzahlgrenze. Stufe 3, Leistungsmotor: +4% Drehmoment, kann aber unter 10% Zustand platzen", "+250 rpm al limitador. Nivel 3, motor forzado: +4% de par, pero por debajo del 10% de salud puede romperse", "+250 tr/min au rupteur. Niveau 3, moteur poussé : +4% de couple, mais sous 10% d'état il peut casser"],
 
   /* regole */
@@ -1229,13 +1241,14 @@ const SIM = (function () {
       F = T * ratio * car.eff / car.rw * cut;
       const limit = car.mu * car.m * G * car.wf * r.gripMul;
       if (F > limit) { r.spin = Math.min(1, F / limit - 1) * (r.gripMul < 1 ? 1 : 0.4); F = limit; }
-      F *= r.boostMul * r.penMul;
+      F *= r.boostMul * r.penMul * (r.nitroT > 0 ? 1.3 : 1);
       if (cut === 0) F = -car.m * 0.6;
       /* pilota CPU: cambia quando i giri raggiungono il suo bersaglio */
       if (r.ai && r.gear < 6 && !r.slipping) {
         if (r.onLimiter ? r.limT > r.ai.limDelay : rpm >= r.ai.shiftTarget) tryShift(r, cfg);
       }
     }
+    if (r.nitroT > 0) r.nitroT -= dt;
     const drag = 0.5 * RHO * car.cda * r.v * r.v + car.crr * car.m * G;
     r.a = (F - drag) / car.m;
     const v0 = r.v;
@@ -1276,6 +1289,7 @@ const SIM = (function () {
     { id: 'frizione', name: 'Frizione', desc: 'cambiate più rapide del 12%' },
     { id: 'pneumatici', name: 'Pneumatici', desc: 'più aderenza: meno pattinamento al via' },
     { id: 'peso', name: 'Alleggerimento', desc: '−3,5% di massa per livello' },
+    { id: 'nitro', name: 'Nitro', desc: 'una spinta del 30% una volta a gara: 1,2 / 1,8 / 2,5 secondi' },
     { id: 'motore', name: 'Motore', desc: '+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere' }
   ];
   const MOD_COST = [200, 350, 550];
@@ -1295,6 +1309,7 @@ const SIM = (function () {
     let mul = 1 + 0.03 * L('centralina') + 0.02 * L('scarico') + (base.turbo ? 0.05 : 0.04) * L('turbo') + (L('motore') === 3 ? 0.04 : 0);
     c.tq.forEach(p => { p[1] *= mul; if (p[0] > c.redline * 0.6) p[1] *= 1 + 0.035 * L('aspirazione'); });
     if (L('turbo')) c.turbo = true;
+    c.nitro = L('nitro');
     c.vs = c.vs.map(v => v * (1 - 0.03 * L('rapporti')));
     c.top = base.top * (1 - 0.02 * L('rapporti'));
     c.shiftMul = 1 - 0.12 * L('frizione');
@@ -1306,7 +1321,13 @@ const SIM = (function () {
     return c;
   }
 
-  return { G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
+  /* nitro: una volta a gara, dopo la partenza */
+  const NITRO_T = [0, 1.2, 1.8, 2.5];
+  function nitro(r) {
+    if (!r.car.nitro || r.nitroUsed || !r.launched || r.finished || r.blown) return false;
+    r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro]; return true;
+  }
+  return { nitro, NITRO_T, G, DT, CARS, MODS, MOD_COST, buildCar, DEFAULT_CFG, shiftZone, launchZone, ratios, torqueAt, peakPowerKw, redlineEff,
     makeRacer, aiPrepare, stepPre, launch, tryShift, stepRace, idealRun, gauss };
 })();
 if (typeof module !== 'undefined') module.exports = SIM;
@@ -1320,6 +1341,8 @@ if (typeof module !== 'undefined') module.exports = SIM;
 const NET = (function () {
   const SB_URL = 'https://skqmwnoewpqflpfaiuzj.supabase.co', SB_KEY = 'sb_publishable_jKb4CFJlNv0nJJHC27WA-A_nH0c3xho';
   const LOCAL = /[?&]net=local/.test(location.search);
+  /* solo per le prove: ritardo di rete finto (ms) con ?lag=200 */
+  const LAG = +((location.search.match(/[?&]lag=(\d+)/) || [])[1] || 0);
   const myId = Math.random().toString(36).slice(2, 10);
   let sb = null;
   function loadScript(src) {
@@ -1342,7 +1365,7 @@ const NET = (function () {
         const m = e.data;
         if (m.t === '_p') { const nw = !seen[m.id] || JSON.stringify(seen[m.id].s) !== JSON.stringify(m.s); seen[m.id] = { s: m.s, at: Date.now() }; if (nw && peersFn) peersFn(list()); }
         else if (m.t === '_bye') { delete seen[m.id]; peersFn && peersFn(list()); }
-        else emit(m.t, m.d);
+        else if (LAG) setTimeout(() => emit(m.t, m.d), LAG * (0.6 + Math.random() * 0.8)); else emit(m.t, m.d);
       };
       const iv = setInterval(tick, 1000);
       return Object.assign(api, {
@@ -1949,10 +1972,14 @@ const RENDER = (function () {
       tint(c, tw, 420); return cv;
     };
     const HZ = BASE - 80;
-    T.hl = row(LIGHT === 'tramonto' ? [GIMG.baldo, GIMG.sunset, GIMG.dolo] : [GIMG.baldo, GIMG.alps, GIMG.dolo], HZ + 4, -30);
+    /* montagne coerenti: in fondo la catena alta (innevata di giorno, accesa al tramonto), davanti il Monte Baldo
+       e i boschi verdi sulla sponda; poi il lago e, sulla riva vicina, paese, villa e castello alla stessa scala */
+    const far = LIGHT === 'tramonto' ? GIMG.sunset : GIMG.alps;
+    T.hl = row([far, far], HZ - 6, -40, 0.82);
+    T.hl2 = row([GIMG.baldo, GIMG.forest, GIMG.baldo, GIMG.forest], HZ + 4, -60, 0.78);
     const lw = GIMG.lakeK1.width, lk = mkHi(lw, 420), lc = lk.getContext('2d');
     lc.drawImage(GIMG.lakeK1, 0, HZ, lw, 420 - HZ); tint(lc, lw, 420); T.fa = lk;
-    T.bd = row([GIMG.riva, GIMG.villa, GIMG.cliff, GIMG.castle, GIMG.forest], BASE + 8, 90);
+    T.bd = row([GIMG.riva, GIMG.villa, GIMG.castle, GIMG.cliff], BASE + 8, 70, 0.88);
     T.gok = true;
     return true;
   }
@@ -2166,7 +2193,7 @@ const RENDER = (function () {
       T.fa = cv;
     }
     /* zona industriale nuova: colline, paese e fabbriche su tre livelli separati (parallasse) */
-    T.hl = null;
+    T.hl = null; T.hl2 = null;
     if (ENV === 'citta' && BGL && [BGL.hills, BGL.village, BGL.factories].every(i => i.complete && i.width)) {
       const mirror = (im, bottom) => {
         /* si tolgono 6 px per lato: i bordi del disegno lasciavano una riga sottile nella giunta */
@@ -2698,7 +2725,8 @@ const RENDER = (function () {
       }
     ctx.drawImage(T.sky, 0, 0);
     tileDraw(ctx, T.cl, off * 0.06, 0);
-    if (T.hl) tileDraw(ctx, T.hl, off * 0.08, 0);
+    if (T.hl) tileDraw(ctx, T.hl, off * 0.05, 0);
+    if (T.hl2) tileDraw(ctx, T.hl2, off * 0.11, 0);
     tileDraw(ctx, T.fa, off * 0.18, 0);
     if (T.glint) {
       /* riflesso del sole o della luna sul lago, fermo sullo schermo */
@@ -3142,6 +3170,12 @@ const RENDER = (function () {
     /* fiammata dallo scarico, dietro alla carrozzeria */
     if (o.flame > 0) {
       const fx = x0 + (sp.rear + 6) * k, fy = o.y - o.sc * 0.36;
+      if (o.nitro) {
+        /* nitro: alone azzurro lungo dietro lo scarico */
+        const L = o.sc * (2.6 + Math.random() * 0.6), g = c.createLinearGradient(fx, 0, fx - L, 0);
+        g.addColorStop(0, 'rgba(230,255,255,0.95)'); g.addColorStop(0.25, 'rgba(70,200,255,0.85)'); g.addColorStop(1, 'rgba(40,90,255,0)');
+        c.fillStyle = g; c.beginPath(); c.moveTo(fx, fy - o.sc * 0.13); c.quadraticCurveTo(fx - L * 0.5, fy - o.sc * 0.2, fx - L, fy); c.quadraticCurveTo(fx - L * 0.5, fy + o.sc * 0.2, fx, fy + o.sc * 0.13); c.fill();
+      }
       const fi = Math.min(7, Math.floor((1 - o.flame) * 8)), fim = FXF[fi];
       if (fim && fim.complete && fim.width) {
         /* fiammata disegnata da Christian: il beccuccio blu sta sullo scarico */
@@ -3364,7 +3398,7 @@ const RENDER = (function () {
       const cs = r.cosm || {};
       drawCar(ctx, r.car.id, {
         x: x, y: y, sc: sc, version: cs.version, glow: cs.glow, look: cs, wheelAng: r.rang !== undefined ? r.rang : r.wheelAng,
-        brake: r.finished || r.blown, flame: r.flameT > 0 ? Math.min(1, r.flameT / 0.4) : 0, blur: Math.min(1, r.v / 22)
+        brake: r.finished || r.blown, nitro: r.nitroT > 0, flame: r.nitroT > 0 ? 0.55 + 0.45 * Math.abs(Math.sin(performance.now() / 45)) : r.flameT > 0 ? Math.min(1, r.flameT / 0.4) : 0, blur: Math.min(1, r.v / 22)
       });
       if (r.blown) { ctx.fillStyle = 'rgba(70,64,80,0.6)'; ctx.beginPath(); ctx.arc(x - S.L * sc * 0.15, y - 2 * sc, 22, 0, TAU); ctx.fill(); }
       if (r === st.player && st.hud && (st.phase === 'stage' || st.phase === 'red' || r.time < 1.2)) {
@@ -3510,6 +3544,7 @@ const RENDER = (function () {
   function isRacing() { return ['stage', 'red', 'race', 'finish'].includes(G.phase); }
   addEventListener('keydown', e => {
     if (e.code === 'Space') { e.preventDefault(); if (isRacing()) press(e.repeat); else if (G.phase === 'results') rematch(); }
+    else if (e.code === 'KeyN' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') { if (!e.repeat) fireNitro(); }
     else if (e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); if (!e.repeat && isRacing()) input.shiftQ++; }
     else if (e.code === 'Escape' || e.code === 'KeyP') { if (isRacing()) togglePause(); }
     else if (e.code === 'Enter' && G.phase === 'results') rematch();
@@ -3540,6 +3575,13 @@ const RENDER = (function () {
   let touchSeen = coarse;
   addEventListener('touchstart', () => { touchSeen = true; if (isRacing()) $('touch').classList.add('on'); }, { passive: true });
 
+  function fireNitro() {
+    const p = G.player;
+    if (!p || G.phase !== 'race' || G.paused || !SIM.nitro(p)) return;
+    AUDIO.fx('blowoff'); AUDIO.fx('backfire'); setMsg(T('race.nitro'), '#5fd8ff', T('race.nitroHint', SIM.NITRO_T[p.car.nitro]), 1);
+    $('btnNitro').classList.add('used');
+  }
+  $('btnNitro').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); fireNitro(); });
   function setOneBtn(shift) {
     $('imgGas').src = ASSETS[shift ? 'shift' : 'gas'];
     const sp = bG.querySelector('span'); sp.dataset.i18n = shift ? 'btn.shift' : 'btn.gas'; sp.textContent = T(sp.dataset.i18n);
@@ -3618,6 +3660,8 @@ const RENDER = (function () {
     G.mode = mode; G.tappa = tappa || 1;
     const od = mode === 'online' ? reuse : null;
     G.cfg = od ? Object.assign({}, od.cfg) : mode === 'career' ? careerCfg(G.tappa) : Object.assign({}, save.cfg);
+    /* sul Lago di Garda si corre su due quarti di miglio */
+    if (mode !== 'career' && (od ? od.track : save.track) === 'garda') G.cfg.dist = 804;
     const wantLight = od ? od.light : mode === 'career' && TAPPE[G.tappa - 1].night ? 'notte' : save.light;
     const wantTrack = od ? od.track : mode === 'career' ? (TAPPE[G.tappa - 1].track || 'citta') : save.track;
     scene(wantTrack, wantLight);
@@ -3632,6 +3676,7 @@ const RENDER = (function () {
     RENDER.clearParts();
     showScreen(null);
     $('touch').classList.toggle('on', touchSeen); setOneBtn(false);
+    $('btnNitro').hidden = !G.player.car.nitro; $('btnNitro').classList.remove('used');
     $('corner').classList.add('on');
     setMsg(T('race.ready'), '#f0c35a', T('race.readyHint', T(touchSeen ? 'btn.gas' : 'key.space')), 1.4);
   }
@@ -3951,7 +3996,7 @@ const RENDER = (function () {
     const B = b.buf; if (!B.length) return null;
     if (t <= B[0].t) return { x: B[0].x, v: B[0].v };
     for (let i = B.length - 1; i > 0; i--) if (B[i - 1].t <= t && t <= B[i].t) { const a = B[i - 1], c = B[i], f = (t - a.t) / Math.max(1e-3, c.t - a.t); return { x: a.x + (c.x - a.x) * f, v: a.v + (c.v - a.v) * f }; }
-    const L = B[B.length - 1], dt = Math.min(0.8, t - L.t);
+    const L = B[B.length - 1], dt = Math.min(1.5, t - L.t);
     return { x: L.x + L.v * dt, v: L.v };
   }
   function remoteStep(r, dt) {
@@ -3959,11 +4004,16 @@ const RENDER = (function () {
     if (b && b.buf && b.buf.length) {
       if (b.ft && t >= b.ft && !r.finished) { r.finished = true; r.finishTime = b.ft; r.trap = b.tr || 0; r.events.push({ t: 'finish' }); }
       const q = remoteAt(b, t);
-      if (q) { r.x += (q.x - r.x) * Math.min(1, dt * 14); r.v = q.v; }
-      r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0;
+      if (q) {
+        let x = q.x;
+        /* il traguardo si passa esattamente al suo tempo: né prima né dopo */
+        if (b.ft) x = t >= b.ft ? Math.max(x, G.dist + (t - b.ft) * q.v) : Math.min(x, G.dist - 0.05);
+        r.x = x; r.v = q.v;
+      }
+      r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0; r.nitroT = b.nt ? 0.2 : 0;
       if (b.n > r.nShift) { r.nShift = b.n; r.flameT = 0.4; }
       if (b.bl && !r.blown) r.blown = true;
-      r.time = t;
+      r.time = Math.min(t, b.ft || t);
     }
     if (r.gone) { r.v = Math.max(0, r.v - 6 * dt); r.x += r.v * dt; }
     r.wheelAng += (r.v * (1 + (r.spin || 0) * 2.2) / r.car.rw) * dt;
@@ -3973,7 +4023,7 @@ const RENDER = (function () {
     if (G.sendT > 0 || !ON.net) return;
     G.sendT = 1 / 20;
     const p = G.player;
-    ON.net.send('st', { id: NET.myId, ph: 'race', t: +(G.raceT || 0).toFixed(3), x: +p.x.toFixed(2), v: +p.v.toFixed(2), rpm: Math.round(p.rpm), g: p.gear, sp: +(p.spin || 0).toFixed(2), n: p.shifts.length, ft: p.finished ? p.finishTime : 0, tr: p.trap || 0, bl: !!p.blown });
+    ON.net.send('st', { id: NET.myId, ph: 'race', t: +(G.raceT || 0).toFixed(3), nt: p.nitroT > 0 ? 1 : 0, x: +p.x.toFixed(2), v: +p.v.toFixed(2), rpm: Math.round(p.rpm), g: p.gear, sp: +(p.spin || 0).toFixed(2), n: p.shifts.length, ft: p.finished ? p.finishTime : 0, tr: p.trap || 0, bl: !!p.blown });
   }
   function onBackToRoom() { G.phase = 'menu'; G.mode = 'quick'; ON.inRace = false; onTrack(); goMenu(); onOpenScreen(); }
 
@@ -3992,7 +4042,7 @@ const RENDER = (function () {
     $('menuPilot').textContent = pilotName(save.pilot);
     $('menuAv').style.backgroundImage = 'url(' + PILOTS[save.pilot] + ')';
     $('menuCredits').textContent = save.credits.toLocaleString('it-IT');
-    document.querySelector('.keys').innerHTML = '<span><kbd>' + T(touchSeen ? 'key.tap' : 'key.space') + '</kbd> ' + T('key.one') + '</span>';
+    document.querySelector('.keys').innerHTML = '<span><kbd>' + T(touchSeen ? 'key.tap' : 'key.space') + '</kbd> ' + T('key.one') + (touchSeen ? '' : ' · ' + T('key.nitro')) + '</span>';
     showScreen('scrMenu');
   }
 
@@ -4465,7 +4515,7 @@ const RENDER = (function () {
     Promise.all(['italic 900', 'italic 800', '900', '800', '700'].map(w => document.fonts.load(w + ' 16px "Barlow Condensed"'))).catch(() => { }).then(bootOnce);
     setTimeout(bootOnce, 2500);
   } else bootOnce();
-  window.__ZSR = { G, SIM, save };
+  window.__ZSR = { G, SIM, save, ON, input, NETID: NET.myId, onOpenRoomTest: () => onOpenRoom('TESTX', 0), onNetStartTest: d => { ON.inRace = false; onNetStart(d); } };
 })();
 </script>
 </body>

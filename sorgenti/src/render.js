@@ -148,10 +148,14 @@ const RENDER = (function () {
       tint(c, tw, 420); return cv;
     };
     const HZ = BASE - 80;
-    T.hl = row(LIGHT === 'tramonto' ? [GIMG.baldo, GIMG.sunset, GIMG.dolo] : [GIMG.baldo, GIMG.alps, GIMG.dolo], HZ + 4, -30);
+    /* montagne coerenti: in fondo la catena alta (innevata di giorno, accesa al tramonto), davanti il Monte Baldo
+       e i boschi verdi sulla sponda; poi il lago e, sulla riva vicina, paese, villa e castello alla stessa scala */
+    const far = LIGHT === 'tramonto' ? GIMG.sunset : GIMG.alps;
+    T.hl = row([far, far], HZ - 6, -40, 0.82);
+    T.hl2 = row([GIMG.baldo, GIMG.forest, GIMG.baldo, GIMG.forest], HZ + 4, -60, 0.78);
     const lw = GIMG.lakeK1.width, lk = mkHi(lw, 420), lc = lk.getContext('2d');
     lc.drawImage(GIMG.lakeK1, 0, HZ, lw, 420 - HZ); tint(lc, lw, 420); T.fa = lk;
-    T.bd = row([GIMG.riva, GIMG.villa, GIMG.cliff, GIMG.castle, GIMG.forest], BASE + 8, 90);
+    T.bd = row([GIMG.riva, GIMG.villa, GIMG.castle, GIMG.cliff], BASE + 8, 70, 0.88);
     T.gok = true;
     return true;
   }
@@ -365,7 +369,7 @@ const RENDER = (function () {
       T.fa = cv;
     }
     /* zona industriale nuova: colline, paese e fabbriche su tre livelli separati (parallasse) */
-    T.hl = null;
+    T.hl = null; T.hl2 = null;
     if (ENV === 'citta' && BGL && [BGL.hills, BGL.village, BGL.factories].every(i => i.complete && i.width)) {
       const mirror = (im, bottom) => {
         /* si tolgono 6 px per lato: i bordi del disegno lasciavano una riga sottile nella giunta */
@@ -897,7 +901,8 @@ const RENDER = (function () {
       }
     ctx.drawImage(T.sky, 0, 0);
     tileDraw(ctx, T.cl, off * 0.06, 0);
-    if (T.hl) tileDraw(ctx, T.hl, off * 0.08, 0);
+    if (T.hl) tileDraw(ctx, T.hl, off * 0.05, 0);
+    if (T.hl2) tileDraw(ctx, T.hl2, off * 0.11, 0);
     tileDraw(ctx, T.fa, off * 0.18, 0);
     if (T.glint) {
       /* riflesso del sole o della luna sul lago, fermo sullo schermo */
@@ -1341,6 +1346,12 @@ const RENDER = (function () {
     /* fiammata dallo scarico, dietro alla carrozzeria */
     if (o.flame > 0) {
       const fx = x0 + (sp.rear + 6) * k, fy = o.y - o.sc * 0.36;
+      if (o.nitro) {
+        /* nitro: alone azzurro lungo dietro lo scarico */
+        const L = o.sc * (2.6 + Math.random() * 0.6), g = c.createLinearGradient(fx, 0, fx - L, 0);
+        g.addColorStop(0, 'rgba(230,255,255,0.95)'); g.addColorStop(0.25, 'rgba(70,200,255,0.85)'); g.addColorStop(1, 'rgba(40,90,255,0)');
+        c.fillStyle = g; c.beginPath(); c.moveTo(fx, fy - o.sc * 0.13); c.quadraticCurveTo(fx - L * 0.5, fy - o.sc * 0.2, fx - L, fy); c.quadraticCurveTo(fx - L * 0.5, fy + o.sc * 0.2, fx, fy + o.sc * 0.13); c.fill();
+      }
       const fi = Math.min(7, Math.floor((1 - o.flame) * 8)), fim = FXF[fi];
       if (fim && fim.complete && fim.width) {
         /* fiammata disegnata da Christian: il beccuccio blu sta sullo scarico */
@@ -1563,7 +1574,7 @@ const RENDER = (function () {
       const cs = r.cosm || {};
       drawCar(ctx, r.car.id, {
         x: x, y: y, sc: sc, version: cs.version, glow: cs.glow, look: cs, wheelAng: r.rang !== undefined ? r.rang : r.wheelAng,
-        brake: r.finished || r.blown, flame: r.flameT > 0 ? Math.min(1, r.flameT / 0.4) : 0, blur: Math.min(1, r.v / 22)
+        brake: r.finished || r.blown, nitro: r.nitroT > 0, flame: r.nitroT > 0 ? 0.55 + 0.45 * Math.abs(Math.sin(performance.now() / 45)) : r.flameT > 0 ? Math.min(1, r.flameT / 0.4) : 0, blur: Math.min(1, r.v / 22)
       });
       if (r.blown) { ctx.fillStyle = 'rgba(70,64,80,0.6)'; ctx.beginPath(); ctx.arc(x - S.L * sc * 0.15, y - 2 * sc, 22, 0, TAU); ctx.fill(); }
       if (r === st.player && st.hud && (st.phase === 'stage' || st.phase === 'red' || r.time < 1.2)) {

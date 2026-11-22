@@ -101,6 +101,7 @@
   function isRacing() { return ['stage', 'red', 'race', 'finish'].includes(G.phase); }
   addEventListener('keydown', e => {
     if (e.code === 'Space') { e.preventDefault(); if (isRacing()) press(e.repeat); else if (G.phase === 'results') rematch(); }
+    else if (e.code === 'KeyN' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') { if (!e.repeat) fireNitro(); }
     else if (e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); if (!e.repeat && isRacing()) input.shiftQ++; }
     else if (e.code === 'Escape' || e.code === 'KeyP') { if (isRacing()) togglePause(); }
     else if (e.code === 'Enter' && G.phase === 'results') rematch();
@@ -131,6 +132,13 @@
   let touchSeen = coarse;
   addEventListener('touchstart', () => { touchSeen = true; if (isRacing()) $('touch').classList.add('on'); }, { passive: true });
 
+  function fireNitro() {
+    const p = G.player;
+    if (!p || G.phase !== 'race' || G.paused || !SIM.nitro(p)) return;
+    AUDIO.fx('blowoff'); AUDIO.fx('backfire'); setMsg(T('race.nitro'), '#5fd8ff', T('race.nitroHint', SIM.NITRO_T[p.car.nitro]), 1);
+    $('btnNitro').classList.add('used');
+  }
+  $('btnNitro').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); fireNitro(); });
   function setOneBtn(shift) {
     $('imgGas').src = ASSETS[shift ? 'shift' : 'gas'];
     const sp = bG.querySelector('span'); sp.dataset.i18n = shift ? 'btn.shift' : 'btn.gas'; sp.textContent = T(sp.dataset.i18n);
@@ -209,6 +217,8 @@
     G.mode = mode; G.tappa = tappa || 1;
     const od = mode === 'online' ? reuse : null;
     G.cfg = od ? Object.assign({}, od.cfg) : mode === 'career' ? careerCfg(G.tappa) : Object.assign({}, save.cfg);
+    /* sul Lago di Garda si corre su due quarti di miglio */
+    if (mode !== 'career' && (od ? od.track : save.track) === 'garda') G.cfg.dist = 804;
     const wantLight = od ? od.light : mode === 'career' && TAPPE[G.tappa - 1].night ? 'notte' : save.light;
     const wantTrack = od ? od.track : mode === 'career' ? (TAPPE[G.tappa - 1].track || 'citta') : save.track;
     scene(wantTrack, wantLight);
@@ -223,6 +233,7 @@
     RENDER.clearParts();
     showScreen(null);
     $('touch').classList.toggle('on', touchSeen); setOneBtn(false);
+    $('btnNitro').hidden = !G.player.car.nitro; $('btnNitro').classList.remove('used');
     $('corner').classList.add('on');
     setMsg(T('race.ready'), '#f0c35a', T('race.readyHint', T(touchSeen ? 'btn.gas' : 'key.space')), 1.4);
   }
@@ -542,7 +553,7 @@
     const B = b.buf; if (!B.length) return null;
     if (t <= B[0].t) return { x: B[0].x, v: B[0].v };
     for (let i = B.length - 1; i > 0; i--) if (B[i - 1].t <= t && t <= B[i].t) { const a = B[i - 1], c = B[i], f = (t - a.t) / Math.max(1e-3, c.t - a.t); return { x: a.x + (c.x - a.x) * f, v: a.v + (c.v - a.v) * f }; }
-    const L = B[B.length - 1], dt = Math.min(0.8, t - L.t);
+    const L = B[B.length - 1], dt = Math.min(1.5, t - L.t);
     return { x: L.x + L.v * dt, v: L.v };
   }
   function remoteStep(r, dt) {
@@ -550,11 +561,16 @@
     if (b && b.buf && b.buf.length) {
       if (b.ft && t >= b.ft && !r.finished) { r.finished = true; r.finishTime = b.ft; r.trap = b.tr || 0; r.events.push({ t: 'finish' }); }
       const q = remoteAt(b, t);
-      if (q) { r.x += (q.x - r.x) * Math.min(1, dt * 14); r.v = q.v; }
-      r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0;
+      if (q) {
+        let x = q.x;
+        /* il traguardo si passa esattamente al suo tempo: né prima né dopo */
+        if (b.ft) x = t >= b.ft ? Math.max(x, G.dist + (t - b.ft) * q.v) : Math.min(x, G.dist - 0.05);
+        r.x = x; r.v = q.v;
+      }
+      r.rpm = b.rpm; r.gear = b.g; r.spin = b.sp || 0; r.nitroT = b.nt ? 0.2 : 0;
       if (b.n > r.nShift) { r.nShift = b.n; r.flameT = 0.4; }
       if (b.bl && !r.blown) r.blown = true;
-      r.time = t;
+      r.time = Math.min(t, b.ft || t);
     }
     if (r.gone) { r.v = Math.max(0, r.v - 6 * dt); r.x += r.v * dt; }
     r.wheelAng += (r.v * (1 + (r.spin || 0) * 2.2) / r.car.rw) * dt;
@@ -564,7 +580,7 @@
     if (G.sendT > 0 || !ON.net) return;
     G.sendT = 1 / 20;
     const p = G.player;
-    ON.net.send('st', { id: NET.myId, ph: 'race', t: +(G.raceT || 0).toFixed(3), x: +p.x.toFixed(2), v: +p.v.toFixed(2), rpm: Math.round(p.rpm), g: p.gear, sp: +(p.spin || 0).toFixed(2), n: p.shifts.length, ft: p.finished ? p.finishTime : 0, tr: p.trap || 0, bl: !!p.blown });
+    ON.net.send('st', { id: NET.myId, ph: 'race', t: +(G.raceT || 0).toFixed(3), nt: p.nitroT > 0 ? 1 : 0, x: +p.x.toFixed(2), v: +p.v.toFixed(2), rpm: Math.round(p.rpm), g: p.gear, sp: +(p.spin || 0).toFixed(2), n: p.shifts.length, ft: p.finished ? p.finishTime : 0, tr: p.trap || 0, bl: !!p.blown });
   }
   function onBackToRoom() { G.phase = 'menu'; G.mode = 'quick'; ON.inRace = false; onTrack(); goMenu(); onOpenScreen(); }
 
@@ -583,7 +599,7 @@
     $('menuPilot').textContent = pilotName(save.pilot);
     $('menuAv').style.backgroundImage = 'url(' + PILOTS[save.pilot] + ')';
     $('menuCredits').textContent = save.credits.toLocaleString('it-IT');
-    document.querySelector('.keys').innerHTML = '<span><kbd>' + T(touchSeen ? 'key.tap' : 'key.space') + '</kbd> ' + T('key.one') + '</span>';
+    document.querySelector('.keys').innerHTML = '<span><kbd>' + T(touchSeen ? 'key.tap' : 'key.space') + '</kbd> ' + T('key.one') + (touchSeen ? '' : ' · ' + T('key.nitro')) + '</span>';
     showScreen('scrMenu');
   }
 
@@ -1056,5 +1072,5 @@
     Promise.all(['italic 900', 'italic 800', '900', '800', '700'].map(w => document.fonts.load(w + ' 16px "Barlow Condensed"'))).catch(() => { }).then(bootOnce);
     setTimeout(bootOnce, 2500);
   } else bootOnce();
-  window.__ZSR = { G, SIM, save };
+  window.__ZSR = { G, SIM, save, ON, input, NETID: NET.myId, onOpenRoomTest: () => onOpenRoom('TESTX', 0), onNetStartTest: d => { ON.inRace = false; onNetStart(d); } };
 })();

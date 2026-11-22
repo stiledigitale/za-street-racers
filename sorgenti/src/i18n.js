@@ -184,6 +184,12 @@ const I18N = {
   'mod.peso': ["Alleggerimento", "Weight reduction", "Gewichtsreduktion", "Aligeramiento", "Allègement"],
   'mod.peso.d': ["−3,5% di massa per livello", "−3.5% weight per level", "−3,5% Masse pro Stufe", "−3,5% de peso por nivel", "−3,5% de masse par niveau"],
   'mod.motore': ["Motore", "Engine", "Motor", "Motor", "Moteur"],
+  'mod.nitro': ["Nitro", "Nitro", "Nitro", "Nitro", "Nitro"],
+  'mod.nitro.d': ["+30% di spinta una volta a gara (1,2 / 1,8 / 2,5 s)", "+30% thrust once per race (1.2 / 1.8 / 2.5 s)", "+30% Schub einmal pro Rennen (1,2 / 1,8 / 2,5 s)", "+30% de empuje una vez por carrera (1,2 / 1,8 / 2,5 s)", "+30% de poussée une fois par course (1,2 / 1,8 / 2,5 s)"],
+  'btn.nitro': ["NITRO", "NITRO", "NITRO", "NITRO", "NITRO"],
+  'race.nitro': ["NITRO!", "NITRO!", "NITRO!", "¡NITRO!", "NITRO !"],
+  'race.nitroHint': ["+30% per {0} s", "+30% for {0} s", "+30% für {0} s", "+30% durante {0} s", "+30% pendant {0} s"],
+  'key.nitro': ["N = nitro", "N = nitro", "N = Nitro", "N = nitro", "N = nitro"],
   'mod.motore.d': ["+250 giri al limitatore. Livello 3, Motore spinta: +4% di coppia, ma sotto il 10% di salute può cedere", "+250 rpm rev limit. Level 3, pushed engine: +4% torque, but below 10% health it can blow", "+250 U/min Drehzahlgrenze. Stufe 3, Leistungsmotor: +4% Drehmoment, kann aber unter 10% Zustand platzen", "+250 rpm al limitador. Nivel 3, motor forzado: +4% de par, pero por debajo del 10% de salud puede romperse", "+250 tr/min au rupteur. Niveau 3, moteur poussé : +4% de couple, mais sous 10% d'état il peut casser"],
 
   /* regole */

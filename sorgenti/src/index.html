@@ -28,6 +28,7 @@ body { display: flex; align-items: center; justify-content: center; touch-action
 #touch img, .imgbtn img { pointer-events: none; -webkit-user-drag: none; }
 #touch .imgbtn { touch-action: none; }
 #stage { position: relative; width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9)); aspect-ratio: 16 / 9; max-height: 100vh; max-height: 100dvh; container-type: size; background: #000; overflow: hidden; font-size: max(10px, 2.15cqh); }
+.mb.off { opacity: 0.4; pointer-events: none; filter: grayscale(0.6); }
 #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 button { font: inherit; color: inherit; cursor: pointer; }
 [hidden] { display: none !important; }
@@ -298,6 +299,10 @@ td.r, th.r { text-align: right; }
 #touch { position: absolute; inset: auto 0 0 0; display: none; justify-content: space-between; align-items: flex-end; padding: 0 1.5% 2.5%; pointer-events: none; }
 #touch.on { display: flex; justify-content: flex-end; }
 #btnShift { display: none !important; }
+.nitrobtn { pointer-events: auto; align-self: flex-end; margin-right: 1.5cqw; margin-bottom: 4cqh; order: 0; width: 15cqh; height: 15cqh; border-radius: 50%; border: 0.25em solid var(--ink); background: radial-gradient(circle at 35% 30%, #9ff3ff, #1aa7e0 55%, #0a5fa8); box-shadow: 0 0.3em 0 var(--ink); font-family: var(--f-d); font-style: italic; font-weight: 900; font-size: 2.6cqh; color: #fff; text-shadow: 0.08em 0.1em 0 var(--ink); touch-action: none; }
+.nitrobtn[hidden] { display: none; }
+.nitrobtn.used { filter: grayscale(1) brightness(0.6); }
+#corner .nitrobtn { display: none; }
 #touch .imgbtn { pointer-events: auto; width: 26cqh; }
 #btnGas.gone { visibility: hidden; }
 #corner { position: absolute; top: 25cqh; right: 1.4%; display: none; flex-direction: column; gap: 0.7em; align-items: center; }
@@ -429,6 +434,7 @@ td.r, th.r { text-align: right; }
   <canvas id="cv" width="1280" height="720" aria-label="Pista di ZA Street Racers"></canvas>
 
   <div id="touch">
+    <button id="btnNitro" class="nitrobtn" type="button" hidden><span data-i18n="btn.nitro">NITRO</span></button>
     <button id="btnGas" class="imgbtn" type="button" aria-label="Accelera" data-i18n-aria="btn.gas"><img alt="" id="imgGas"><span data-i18n="btn.gas">ACCELERA</span></button>
     <button id="btnShift" class="imgbtn" type="button" aria-label="Cambio" data-i18n-aria="btn.shift"><img alt="" id="imgShift"><span data-i18n="btn.shift">CAMBIO</span></button>
   </div>
@@ -453,7 +459,7 @@ td.r, th.r { text-align: right; }
       <button class="gbtn purple mb" data-act="career" type="button"><b data-i18n="menu.career">Carriera</b><span data-i18n="menu.careerSub">Sei tappe, sempre più strette</span></button>
       <button class="gbtn blue mb" data-act="garage" type="button"><b data-i18n="menu.garage">Garage</b><span data-i18n="menu.garageSub">Elaborazioni, colori, cerchi</span></button>
       <button class="gbtn green mb" data-act="pilots" type="button"><b data-i18n="p.kicker">Piloti</b><span data-i18n="p.title">Scegli il tuo pilota</span></button>
-      <button class="gbtn dark mb" data-act="rules" type="button"><b data-i18n="menu.rules">Regole</b><span data-i18n="menu.rulesSub">Valori, luce e audio</span></button>
+      <button class="gbtn dark mb off" data-act="rules" type="button" disabled><b data-i18n="menu.rules">Regole</b><span data-i18n="menu.rulesSub">Valori, luce e audio</span></button>
     </nav>
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
       <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>

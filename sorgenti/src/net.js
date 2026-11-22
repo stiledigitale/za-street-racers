@@ -7,6 +7,8 @@
 const NET = (function () {
   const SB_URL = 'https://skqmwnoewpqflpfaiuzj.supabase.co', SB_KEY = 'sb_publishable_jKb4CFJlNv0nJJHC27WA-A_nH0c3xho';
   const LOCAL = /[?&]net=local/.test(location.search);
+  /* solo per le prove: ritardo di rete finto (ms) con ?lag=200 */
+  const LAG = +((location.search.match(/[?&]lag=(\d+)/) || [])[1] || 0);
   const myId = Math.random().toString(36).slice(2, 10);
   let sb = null;
   function loadScript(src) {
@@ -29,7 +31,7 @@ const NET = (function () {
         const m = e.data;
         if (m.t === '_p') { const nw = !seen[m.id] || JSON.stringify(seen[m.id].s) !== JSON.stringify(m.s); seen[m.id] = { s: m.s, at: Date.now() }; if (nw && peersFn) peersFn(list()); }
         else if (m.t === '_bye') { delete seen[m.id]; peersFn && peersFn(list()); }
-        else emit(m.t, m.d);
+        else if (LAG) setTimeout(() => emit(m.t, m.d), LAG * (0.6 + Math.random() * 0.8)); else emit(m.t, m.d);
       };
       const iv = setInterval(tick, 1000);
       return Object.assign(api, {
