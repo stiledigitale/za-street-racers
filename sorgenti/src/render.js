@@ -479,7 +479,8 @@ const RENDER = (function () {
   }
   /* tela ad alta risoluzione: disegni in coordinate di gioco, viene salvata a RS volte la risoluzione */
   let RS = 1;
-  function mkHi(w, h) { const k = RS, c = mk(Math.ceil(w * k), Math.ceil(h * k)); c._lw = w; c._lh = h; const g = c.getContext('2d'); g.scale(k, k); g.imageSmoothingQuality = 'high'; return c; }
+  const VIVID = 'saturate(1.12) contrast(1.04)';
+  function mkHi(w, h) { const k = RS, c = mk(Math.ceil(w * k), Math.ceil(h * k)); c._lw = w; c._lh = h; const g = c.getContext('2d'); g.scale(k, k); g.imageSmoothingQuality = 'high'; try { g.filter = VIVID; } catch (e) { } return c; }
 
   /* ================= FOLLA ================= */
   /* Spettatori dietro le barriere al via e al traguardo. Ogni figura è disegnata una volta in 3 pose
@@ -1122,7 +1123,7 @@ const RENDER = (function () {
       tc.imageSmoothingQuality = 'high'; tc.drawImage(src, 0, 0, t.width, t.height);
       src = t; sw = t.width; sh = t.height;
     }
-    const cv = mk(w, h), cc = cv.getContext('2d'); cc.imageSmoothingQuality = 'high'; cc.drawImage(src, 0, 0, w, h);
+    const cv = mk(w, h), cc = cv.getContext('2d'); cc.imageSmoothingQuality = 'high'; try { cc.filter = VIVID; } catch (e) { } cc.drawImage(src, 0, 0, w, h);
     const keys = Object.keys(im._c); if (keys.length > 12) delete im._c[keys[0]];
     im._c[key] = cv;
     return cv;

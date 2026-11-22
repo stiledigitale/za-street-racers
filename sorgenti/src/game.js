@@ -6,11 +6,30 @@
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
   /* canvas alla risoluzione vera dello schermo (fino a 2x): grafica nitida anche sui telefoni */
-  let CK2 = 1;
+  /* qualità automatica: si parte dalla risoluzione dello schermo (iPhone al massimo 1,5x) e, se il telefono non
+     regge 50 fotogrammi al secondo, si scende a passi fino a 1x. La scelta resta salvata per le volte dopo. */
+  const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let CK2 = 1, QMAX = 2;
+  try { const q = parseFloat(localStorage.getItem('zsr_q')); if (q >= 1 && q <= 2) QMAX = q; } catch (e) { }
+  if (IOS) QMAX = Math.min(QMAX, 1.5);
   function fitCanvas() {
-    const r = cv.getBoundingClientRect(), k = Math.max(1, Math.min(2, (r.width * (devicePixelRatio || 1)) / 1280));
+    const r = cv.getBoundingClientRect(), k = Math.max(1, Math.min(QMAX, (r.width * (devicePixelRatio || 1)) / 1280));
     if (Math.abs(k - CK2) < 0.05 && cv.width === Math.round(1280 * k)) return;
     CK2 = k; cv.width = Math.round(1280 * k); cv.height = Math.round(720 * k); RENDER.setRS(k);
+  }
+  const perf = { n: 0, sum: 0, cool: 0 };
+  function perfFrame(dt) {
+    if (perf.cool > 0) { perf.cool -= dt; return; }
+    if (dt > 0.25 || document.hidden) return;
+    perf.n++; perf.sum += dt;
+    if (perf.n >= 90) {
+      const avg = perf.sum / perf.n; perf.n = 0; perf.sum = 0;
+      if (avg > 1 / 50 && CK2 > 1.01) {
+        QMAX = Math.max(1, Math.round((CK2 - 0.25) * 4) / 4);
+        try { localStorage.setItem('zsr_q', String(QMAX)); } catch (e) { }
+        fitCanvas(); perf.cool = 2;
+      }
+    }
   }
   addEventListener('resize', () => setTimeout(fitCanvas, 60));
   const CAR = id => SIM.CARS.find(c => c.id === id) || SIM.CARS[0];
@@ -351,6 +370,7 @@
   let last = performance.now(), acc = 0, sway = 0;
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    perfFrame(dt);
     if (isRacing()) {
       if (!G.paused) {
         acc += dt;

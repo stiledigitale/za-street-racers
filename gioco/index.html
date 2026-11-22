@@ -2,7 +2,10 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>ZA Street Racers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,9 +24,11 @@
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; background: var(--ink); color: var(--fg); font-family: var(--f-b); font-weight: 500; overflow: hidden; }
-body { display: flex; align-items: center; justify-content: center; touch-action: none; -webkit-user-select: none; user-select: none; }
+body { display: flex; align-items: center; justify-content: center; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+#touch img, .imgbtn img { pointer-events: none; -webkit-user-drag: none; }
+#touch .imgbtn { touch-action: none; }
 #stage { position: relative; width: min(100vw, calc(100vh * 16 / 9)); width: min(100vw, calc(100dvh * 16 / 9)); aspect-ratio: 16 / 9; max-height: 100vh; max-height: 100dvh; container-type: size; background: #000; overflow: hidden; font-size: max(10px, 2.15cqh); }
-#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: saturate(1.12) contrast(1.04); }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 button { font: inherit; color: inherit; cursor: pointer; }
 [hidden] { display: none !important; }
 button:focus-visible, input:focus-visible { outline: 3px dashed var(--yellow); outline-offset: 4px; }
@@ -2271,7 +2276,8 @@ const RENDER = (function () {
   }
   /* tela ad alta risoluzione: disegni in coordinate di gioco, viene salvata a RS volte la risoluzione */
   let RS = 1;
-  function mkHi(w, h) { const k = RS, c = mk(Math.ceil(w * k), Math.ceil(h * k)); c._lw = w; c._lh = h; const g = c.getContext('2d'); g.scale(k, k); g.imageSmoothingQuality = 'high'; return c; }
+  const VIVID = 'saturate(1.12) contrast(1.04)';
+  function mkHi(w, h) { const k = RS, c = mk(Math.ceil(w * k), Math.ceil(h * k)); c._lw = w; c._lh = h; const g = c.getContext('2d'); g.scale(k, k); g.imageSmoothingQuality = 'high'; try { g.filter = VIVID; } catch (e) { } return c; }
 
   /* ================= FOLLA ================= */
   /* Spettatori dietro le barriere al via e al traguardo. Ogni figura è disegnata una volta in 3 pose
@@ -2914,7 +2920,7 @@ const RENDER = (function () {
       tc.imageSmoothingQuality = 'high'; tc.drawImage(src, 0, 0, t.width, t.height);
       src = t; sw = t.width; sh = t.height;
     }
-    const cv = mk(w, h), cc = cv.getContext('2d'); cc.imageSmoothingQuality = 'high'; cc.drawImage(src, 0, 0, w, h);
+    const cv = mk(w, h), cc = cv.getContext('2d'); cc.imageSmoothingQuality = 'high'; try { cc.filter = VIVID; } catch (e) { } cc.drawImage(src, 0, 0, w, h);
     const keys = Object.keys(im._c); if (keys.length > 12) delete im._c[keys[0]];
     im._c[key] = cv;
     return cv;
@@ -3405,11 +3411,30 @@ const RENDER = (function () {
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
   /* canvas alla risoluzione vera dello schermo (fino a 2x): grafica nitida anche sui telefoni */
-  let CK2 = 1;
+  /* qualità automatica: si parte dalla risoluzione dello schermo (iPhone al massimo 1,5x) e, se il telefono non
+     regge 50 fotogrammi al secondo, si scende a passi fino a 1x. La scelta resta salvata per le volte dopo. */
+  const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let CK2 = 1, QMAX = 2;
+  try { const q = parseFloat(localStorage.getItem('zsr_q')); if (q >= 1 && q <= 2) QMAX = q; } catch (e) { }
+  if (IOS) QMAX = Math.min(QMAX, 1.5);
   function fitCanvas() {
-    const r = cv.getBoundingClientRect(), k = Math.max(1, Math.min(2, (r.width * (devicePixelRatio || 1)) / 1280));
+    const r = cv.getBoundingClientRect(), k = Math.max(1, Math.min(QMAX, (r.width * (devicePixelRatio || 1)) / 1280));
     if (Math.abs(k - CK2) < 0.05 && cv.width === Math.round(1280 * k)) return;
     CK2 = k; cv.width = Math.round(1280 * k); cv.height = Math.round(720 * k); RENDER.setRS(k);
+  }
+  const perf = { n: 0, sum: 0, cool: 0 };
+  function perfFrame(dt) {
+    if (perf.cool > 0) { perf.cool -= dt; return; }
+    if (dt > 0.25 || document.hidden) return;
+    perf.n++; perf.sum += dt;
+    if (perf.n >= 90) {
+      const avg = perf.sum / perf.n; perf.n = 0; perf.sum = 0;
+      if (avg > 1 / 50 && CK2 > 1.01) {
+        QMAX = Math.max(1, Math.round((CK2 - 0.25) * 4) / 4);
+        try { localStorage.setItem('zsr_q', String(QMAX)); } catch (e) { }
+        fitCanvas(); perf.cool = 2;
+      }
+    }
   }
   addEventListener('resize', () => setTimeout(fitCanvas, 60));
   const CAR = id => SIM.CARS.find(c => c.id === id) || SIM.CARS[0];
@@ -3750,6 +3775,7 @@ const RENDER = (function () {
   let last = performance.now(), acc = 0, sway = 0;
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    perfFrame(dt);
     if (isRacing()) {
       if (!G.paused) {
         acc += dt;
