@@ -917,8 +917,22 @@ const RENDER = (function () {
       for (let m = Math.floor(camX / per) * per; m < camX + W / PPM + per; m += per) ctx.drawImage(T.dash[i - 1], Math.round((m - camX) * PPM), Math.round(y));
     }
     if (ENV === 'citta' && CURB && CURB.complete && CURB.width) {
-      tileDraw(ctx, T.fg, off, ROAD_BOT); tileDraw(ctx, CURB, off, ROAD_BOT - 10);
-      if (okImg(GRASSI)) { GRASSI._lw = GRASSI.width / GRASS.k; GRASSI._lh = GRASSI.height / GRASS.k; tileDraw(ctx, GRASSI, off * 1.08, H - GRASSI._lh + 4); }
+      /* sotto la pista: marciapiede di cemento e prato pulito, poi l'erba di Christian sul bordo dello schermo */
+      if (!T.low) {
+        const lw = 512, lh = H - ROAD_BOT, cv = mkHi(lw, lh), g = cv.getContext('2d');
+        const night = P.night, side = night ? '#5d5f78' : '#c9c6c0', sideD = night ? '#45475e' : '#a9a59f', lawn = night ? '#2e5a3a' : '#79b83f', lawnD = night ? '#244a2f' : '#5f9c32';
+        const sw = 34;
+        g.fillStyle = side; g.fillRect(0, 0, lw, sw);
+        g.fillStyle = sideD; for (let x = 0; x < lw; x += 64) g.fillRect(x, 0, 3, sw);
+        g.fillRect(0, sw - 5, lw, 5);
+        g.fillStyle = INK; g.fillRect(0, sw, lw, 3);
+        const gr = g.createLinearGradient(0, sw, 0, lh); gr.addColorStop(0, lawnD); gr.addColorStop(0.35, lawn); gr.addColorStop(1, lawn);
+        g.fillStyle = gr; g.fillRect(0, sw + 3, lw, lh - sw - 3);
+        if (LIGHT === 'tramonto') { g.fillStyle = 'rgba(255,130,70,0.08)'; g.fillRect(0, 0, lw, lh); }
+        T.low = cv;
+      }
+      tileDraw(ctx, T.low, off, ROAD_BOT); tileDraw(ctx, CURB, off, ROAD_BOT - 10);
+      if (okImg(GRASSI)) { GRASSI._lw = GRASSI.width / GRASS.k; GRASSI._lh = GRASSI.height / GRASS.k; tileDraw(ctx, GRASSI, off, H - GRASSI._lh + 6); }
     }
     else { tileDraw(ctx, T.edgeNear, off, ROAD_BOT - 12); tileDraw(ctx, T.fg, off, ROAD_BOT); }
     const vis = m => m > camX - 8 && m < camX + W / PPM + 8, sx = m => (m - camX) * PPM;
