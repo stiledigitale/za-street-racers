@@ -210,15 +210,20 @@ const SIM = (function () {
     } else if (r.finished) {
       /* dopo il traguardo: 2 s col piede alzato (solo aria e freno motore), poi una frenata dolce */
       r.postT = (r.postT || 0) + dt;
-      F = r.v <= 0 ? 0 : -car.m * (r.postT < 1.2 ? 0.6 : 3.4);
-      /* scalate: una marcia giù ogni mezzo secondo, con la doppietta (colpo di gas) e lo scoppio dallo scarico */
+      F = r.v <= 0 ? 0 : -car.m * (r.postT < 0.35 ? 0.8 : r.postT < 0.7 ? 4 : 6.5);
+      /* scalate realistiche: si scala solo quando il motore è sceso di giri (circa 3000)
+         e la marcia sotto non lo manda oltre i 3/4 del limitatore; doppietta breve con il motore che sale
+         dolce ai giri giusti, poi frizione attaccata e giri legati alle ruote */
       r.downT = (r.downT || 0) - dt;
-      if (r.postT > 0.7 && r.gear > 2 && r.v > 4 && r.downT <= 0) {
-        r.gear--; r.downT = 0.5;
-        r.rpm = Math.min(car.redline - 200, r.v * k * rat[r.gear - 1] + 900);
+      const wr = g => r.v * k * rat[g - 1];
+      if (r.postT > 0.8 && r.gear > 2 && r.v > 5 && r.downT <= 0 && wr(r.gear - 1) < car.redline * 0.82) {
+        r.gear--; r.downT = 0.65; r.blipT = 0.2;
         r.events.push({ t: 'down' });
       }
-      r.rpm += (Math.max(car.idle, r.v * k * rat[r.gear - 1] * 0.85) - r.rpm) * Math.min(1, dt * 3);
+      if (r.blipT > 0) {
+        r.blipT -= dt;
+        r.rpm += (wr(r.gear) * 1.06 - r.rpm) * Math.min(1, dt * 14);
+      } else r.rpm += (Math.max(car.idle, wr(r.gear)) - r.rpm) * Math.min(1, dt * 5);
       r.onLimiter = false;
     } else if (r.shiftT > 0) {
       r.shiftT -= dt;

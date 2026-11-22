@@ -296,7 +296,7 @@
         r.events.forEach(ev => {
           if (r === p && ev.t === 'blown') { AUDIO.fx('blown'); setMsg(T('race.blown'), '#ff4b33', T('race.blownHint'), 2); }
           if (r === p && ev.t === 'finish') AUDIO.fx('finish');
-          if (ev.t === 'down') { r.flameT = 0.3; if (r === p) { AUDIO.fx('backfire'); AUDIO.fx('shift'); } }
+          if (ev.t === 'down' && Math.random() < 0.3) { r.flameT = 0.15; if (r === p) AUDIO.fx('backfire'); }
           if (ev.t === 'finish' && !cheer.done) { cheer.done = true; cheer.b = 1; AUDIO.fx('cheer'); }
         });
         r.events.length = 0;
@@ -316,7 +316,7 @@
         G.finishT += dt;
         const all = G.racers.every(r => r.finished || r.blown || r.gone);
         if (G.mode === 'online') onSendState(dt);
-        if ((all && G.finishT > 2.6) || G.finishT > 25) showResults();
+        if ((all && G.finishT > 5.5) || G.finishT > 25) showResults();
       }
     }
   }
@@ -351,7 +351,7 @@
     if (!active) { AUDIO.update({ active: false }); return; }
     let near = null, nd = 1e9;
     G.racers.forEach(r => { if (r !== p && Math.abs(r.x - p.x) < nd) { nd = Math.abs(r.x - p.x); near = r; } });
-    const load = G.phase === 'red' || G.phase === 'stage' ? (input.gas ? 1 : 0.15) : (p.finished || p.blown || p.shiftT > 0 ? 0.1 : 1);
+    const load = G.phase === 'red' || G.phase === 'stage' ? (input.gas ? 1 : 0.15) : (p.finished ? (p.blipT > 0 ? 0.55 : 0.08) : p.blown || p.shiftT > 0 ? 0.1 : 1);
     AUDIO.update({ active: true, rpm: p.rpm, cyl: p.car.cyl, load: load, limiter: p.onLimiter, spin: p.spin + (p.slipping && p.launch && p.launch.q === 'eccessiva' ? 0.5 : 0),
       turbo: p.car.turbo, health: p.health, speed: p.v, cpuRpm: near ? near.rpm : 900, cpuCyl: near ? near.car.cyl : 4, exhaust: p.car.exhaust || 0 });
   }
