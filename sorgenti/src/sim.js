@@ -346,7 +346,7 @@ const SIM = (function () {
   /* nitro: una volta a gara, dopo la partenza */
   /* ogni auto ha un goccino di nitro (0,4 s); col potenziamento la bombola cresce */
   const NITRO_T = [0.4, 1.0, 1.7, 2.5];
-  const NITRO_COST = [3000, 7000, 14000];
+  const NITRO_COST = [5000, 10000, 18000];
   function nitro(r) {
     if (r.nitroUsed || !r.launched || r.finished || r.blown) return false;
     r.nitroUsed = true; r.nitroT = NITRO_T[r.car.nitro | 0]; return true;

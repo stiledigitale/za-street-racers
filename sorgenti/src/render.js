@@ -706,6 +706,7 @@ const RENDER = (function () {
   const GRASSI = typeof GRASS !== 'undefined' ? mkImg(GRASS.img) : null;
   const SIGNI = typeof SIGNS !== 'undefined' ? { s100: mkImg(SIGNS.s100), s200: mkImg(SIGNS.s200), blank: mkImg(SIGNS.blank) } : null;
   const okImg = i => i && i.complete && i.width;
+  const NUI = typeof NITRO_UI !== 'undefined' ? { bottle: mkImg(NITRO_UI.bottle), frame: mkImg(NITRO_UI.frame), fill: mkImg(NITRO_UI.fill) } : null;
   /* cartelli delle distanze, vegetazione e recinzioni basse di Christian */
   const DSI = typeof DIST_SIGNS !== 'undefined' ? Object.fromEntries(Object.entries(DIST_SIGNS).filter(([k]) => k !== 'k').map(([k, u]) => [k, mkImg(u)])) : null;
   const VEGI = typeof VEG !== 'undefined' ? Object.fromEntries(Object.entries(VEG).filter(([k]) => k !== 'k').map(([k, u]) => [k, mkImg(u)])) : null;
@@ -1572,10 +1573,19 @@ const RENDER = (function () {
     c.font = fd(800, 17); c.fillText(TX('hud.ofN', st.racers.length), 1076, 104);
     /* livello della nitro */
     if (typeof SIM !== 'undefined' && SIM.nitroLeft) {
-      const nl = SIM.nitroLeft(p), nx = 1000, ny = 130, nw = 150;
-      c.textAlign = 'left'; c.font = fd(900, 15); c.fillStyle = '#5fd8ff'; c.strokeStyle = INK; c.lineWidth = 3; c.strokeText('NITRO', nx, ny + 8); c.fillText('NITRO', nx, ny + 8);
-      rrect(c, nx + 50, ny, nw - 50, 16, 5); inked(c, '#1d1733', 3);
-      if (nl > 0) { rrect(c, nx + 52, ny + 2, (nw - 54) * nl, 12, 4); c.fillStyle = p.nitroT > 0 ? '#e8ffff' : '#2ab8f0'; c.fill(); }
+      const nl = SIM.nitroLeft(p), nx = 1004, ny = 140, nw = 156;
+      if (NUI && okImg(NUI.frame) && okImg(NUI.bottle) && okImg(NUI.fill)) {
+        /* bombola e barra disegnate da Christian */
+        const bh = 52, bw = NUI.bottle.width * bh / NUI.bottle.height; c.drawImage(NUI.bottle, nx - 6, ny - 14, bw, bh);
+        const fx = nx + bw + 2, fw = nw - bw + 6, fh = NUI.frame.height * fw / NUI.frame.width, fy = ny + 10 - fh / 2, inn = NITRO_UI.inner;
+        c.drawImage(NUI.frame, fx, fy, fw, fh);
+        const ix = fx + inn[0] * fw, iy = fy + inn[1] * fh, iw = (inn[2] - inn[0]) * fw, ih = (inn[3] - inn[1]) * fh;
+        if (nl > 0) { c.save(); if (p.nitroT > 0) c.globalAlpha = 0.65 + 0.35 * Math.abs(Math.sin(performance.now() / 60)); c.drawImage(NUI.fill, ix, iy, iw * nl, ih); c.restore(); }
+      } else {
+        c.textAlign = 'left'; c.font = fd(900, 15); c.fillStyle = '#5fd8ff'; c.strokeStyle = INK; c.lineWidth = 3; c.strokeText('NITRO', nx, ny + 8); c.fillText('NITRO', nx, ny + 8);
+        rrect(c, nx + 50, ny, nw - 50, 16, 5); inked(c, '#1d1733', 3);
+        if (nl > 0) { rrect(c, nx + 52, ny + 2, (nw - 54) * nl, 12, 4); c.fillStyle = p.nitroT > 0 ? '#e8ffff' : '#2ab8f0'; c.fill(); }
+      }
     }
 
     /* messaggio grande */
