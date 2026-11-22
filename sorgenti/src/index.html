@@ -364,6 +364,7 @@ td.r, th.r { text-align: right; }
 .mlogo { position: absolute; left: 3cqw; top: 14cqh; width: 44cqw; }
 #scrMenu .brand h1 { font-size: 2.75em; margin: 0; }
 #scrMenu .mlogo { width: 60cqw; }
+#scrMenu .mtag { white-space: nowrap; font-size: 1.05em; font-weight: 800; margin: 0.2em 0 0; }
 #scrMenu .brand p { font-size: 0.95em; color: #dbe6ff; margin-top: 0.3em; max-width: 26em; }
 .mbtns { position: absolute; left: 3cqw; top: 46cqh; width: 42cqw; display: grid; grid-template-columns: 1fr 1fr; gap: 1.6cqh 1.2cqw; }
 .mb { position: relative; height: 13.5cqh; flex-direction: column; align-items: flex-start; justify-content: center; padding: 0 0.9em; text-align: left; }
@@ -437,7 +438,7 @@ td.r, th.r { text-align: right; }
     </div>
     <div class="brand mlogo">
       <h1 aria-label="ZA Street Racers"><span class="l1"><img id="zaLogo" class="za" alt="ZA"> STREET</span> <span class="l2">RACERS</span></h1>
-      <p data-i18n="menu.tag">Quattro corsie, un quarto di miglio, il tempo lo fa la tua mano.</p>
+      <p class="mtag" data-i18n="menu.tag">Una strada, un quarto di miglio, il tempo dipende da te!</p>
     </div>
     <nav class="mbtns">
       <button class="gbtn purple mb" data-act="career" type="button"><b data-i18n="menu.career">Carriera</b><span data-i18n="menu.careerSub">Sei tappe, sempre più strette</span></button>
@@ -520,8 +521,9 @@ td.r, th.r { text-align: right; }
       <div class="row"><button class="btn primary" data-act="onExit" type="button" data-i18n="common.menu">Menu</button></div>
     </div>
     <div id="onHome" class="onhome">
-      <button class="btn primary onbig" data-act="onQuick" type="button" data-i18n="on.quick">PARTITA VELOCE</button>
-      <button class="btn onbig" data-act="onCreate" type="button" data-i18n="on.create">CREA STANZA</button>
+      <button class="btn primary onbig" data-act="onQuick" data-n="2" type="button" data-i18n="on.quick2">SFIDA A 2</button>
+      <button class="btn primary onbig" data-act="onQuick" data-n="4" type="button" data-i18n="on.quick4">SFIDA A 4</button>
+      <button class="btn onbig onjoin" data-act="onCreate" type="button" data-i18n="on.create">CREA STANZA</button>
       <div class="row onjoin"><input id="onCode" maxlength="5" autocomplete="off" spellcheck="false"><button class="btn" data-act="onJoin" type="button" data-i18n="on.join">ENTRA</button></div>
     </div>
     <div id="onRoom" class="onroom" hidden>

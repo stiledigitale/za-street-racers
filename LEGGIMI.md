@@ -26,9 +26,9 @@ Collega il repository stiledigitale/za-street-racers e scrivi: *"Questo è il mi
 
 ## Multiplayer online (2-4 piloti)
 Come Tactical Racing Simulator: **Supabase Realtime**, progetto `stiledigitale_games` (stessa chiave publishable di TRS), nessun server da mantenere e nessuna tabella. Codice in `sorgenti/src/net.js` e in fondo a `game.js` (sezione "multiplayer online").
-- **Menu → ONLINE**: *Partita veloce* (canale `zsr-quick`: chi cerca da più tempo forma il gruppo, fino a 4, e parte da solo; con 2 piloti parte dopo ~6 s di attesa) oppure *Crea stanza* (codice di 5 lettere, senza I e O) / *Entra* con il codice. *Invita* copia o condivide il link `?room=CODICE`: aprendolo si entra direttamente nella stanza.
+- **Menu → ONLINE**: *Sfida a 2* o *Sfida a 4* (canali `zsr-quick2` / `zsr-quick4`: quando ci sono abbastanza piloti che cercano, chi cerca da più tempo forma il gruppo e la gara parte da sola) oppure *Crea stanza* (codice di 5 lettere, senza I e O) / *Entra* con il codice. *Invita* copia o condivide il link `?room=CODICE`: aprendolo si entra direttamente nella stanza.
 - Stanza = canale `zsr-room-CODICE`; presence con nome, pilota, auto e aspetto. Il primo arrivato crea la gara e preme **VIA!** (servono almeno 2 piloti). Massimo 4; non si entra in una gara in corso.
-- Corsie libere **vuote** (niente CPU). Ognuno vede la propria auto nella corsia vicina e gli altri nelle corsie dietro.
+- Corsie libere **vuote** (niente CPU). In due si corre nelle corsie centrali. Ognuno vede la propria auto nella corsia più vicina; i nomi dei piloti compaiono dietro le auto prima del via.
 - Ognuno simula solo la propria auto e manda la posizione 15 volte al secondo; il tempo di ognuno parte dal suo verde, quindi la classifica è giusta anche con un po' di ritardo di rete. Chi esce durante la gara si ferma ("ha lasciato la gara").
 - Fine gara: crediti come la gara veloce, **Torna alla stanza** per la rivincita.
 - Prove: `?net=local` simula la rete tra le schede dello stesso browser. Nell'artefatto di claude.ai il multiplayer non funziona (solo sul sito).

@@ -132,6 +132,29 @@ const RENDER = (function () {
   const SKYI = typeof SKY_IMG !== 'undefined' ? { sun: (() => { const i = new Image(); i.src = SKY_IMG.sun; return i; })(), clouds: SKY_IMG.clouds.map(u => { const i = new Image(); i.src = u; return i; }) } : null;
   const BGL = typeof BG_LAYERS !== 'undefined' ? Object.fromEntries(Object.entries(BG_LAYERS).filter(([k]) => k !== 'k').map(([k, u]) => { const i = new Image(); i.src = u; return [k, i]; })) : null;
   const BGX = typeof BG_EXTRA !== 'undefined' ? BG_EXTRA.map(u => { const i = new Image(); i.src = u; return i; }) : [];
+  const GIMG = typeof GARDA_IMG !== 'undefined' ? Object.fromEntries(Object.entries(GARDA_IMG).filter(([k]) => k !== 'k').map(([k, u]) => { const i = new Image(); i.src = u; return [k, i]; })) : null;
+  /* lago di Garda con la grafica di Christian: montagne, lago, lungolago di Riva, villa, castello, rocce e boschi su tre livelli */
+  function buildGardaImg() {
+    if (!GIMG || !Object.values(GIMG).every(i => i.complete && i.width)) return false;
+    const k = GARDA_IMG.k, tint = (c, w, h) => {
+      c.globalCompositeOperation = 'source-atop';
+      if (P.night) { c.fillStyle = 'rgba(25,15,60,0.55)'; c.fillRect(0, 0, w, h); }
+      else if (LIGHT === 'tramonto') { c.fillStyle = 'rgba(255,130,70,0.08)'; c.fillRect(0, 0, w, h); }
+      c.globalCompositeOperation = 'source-over';
+    };
+    const row = (list, bottom, gap, scale) => {
+      const tw = list.reduce((a, i) => a + i.width / k * (scale || 1) + gap, 0), cv = mkHi(tw, 420), c = cv.getContext('2d');
+      let x = gap / 2; list.forEach(i => { const w = i.width / k * (scale || 1), h = i.height / k * (scale || 1); c.drawImage(i, x, bottom - h, w, h); x += w + gap; });
+      tint(c, tw, 420); return cv;
+    };
+    const HZ = BASE - 80;
+    T.hl = row(LIGHT === 'tramonto' ? [GIMG.baldo, GIMG.sunset, GIMG.dolo] : [GIMG.baldo, GIMG.alps, GIMG.dolo], HZ + 4, -30);
+    const lw = GIMG.lakeK1.width, lk = mkHi(lw, 420), lc = lk.getContext('2d');
+    lc.drawImage(GIMG.lakeK1, 0, HZ, lw, 420 - HZ); tint(lc, lw, 420); T.fa = lk;
+    T.bd = row([GIMG.riva, GIMG.villa, GIMG.cliff, GIMG.castle, GIMG.forest], BASE + 8, 90);
+    T.gok = true;
+    return true;
+  }
   function buildTiles() {
     const r = rng(1960);
     T = {};
@@ -447,6 +470,7 @@ const RENDER = (function () {
     buildTiles();
     if (ENV === 'garda' && typeof buildGarda === 'function')
       buildGarda({ mk, rng, shade, rrect, inked, inkStroke, setSketch: v => { SKETCH = v; }, wash, palm, fd, INK, BASE, PPM, P, T, TAU, light: LIGHT });
+    if (ENV === 'garda') buildGardaImg();
   }
   function setLight(name) { setScene(ENV, name); }
   function tileDraw(ctx, img, offset, y) {
@@ -890,6 +914,16 @@ const RENDER = (function () {
     drawCrowd(ctx, st);
     if (ENV === 'citta' && T.fence) industrialBarrier(ctx, camX, st.dist);
     if (ENV === 'citta') sideProps(ctx, camX, st.dist);
+    else if (T.gok) {
+      /* lungolago: pini ogni tanto e la balaustra con i vasi di fiori */
+      const k = GARDA_IMG.k, tr = GIMG.tree, tw = tr.width / k, th = tr.height / k;
+      for (let i = Math.floor((camX - 20) / 37); i * 37 < camX + W / PPM + 20; i++) {
+        if (dhash(i * 1.9 + 0.4) > 0.6) continue;
+        const x = (i * 37 + dhash(i + 0.3) * 12 - camX) * PPM; ctx.drawImage(tr, Math.round(x - tw / 2), 428 - th, tw, th);
+      }
+      const bl = GIMG.balu; bl._lw = bl.width / k; bl._lh = bl.height / k;
+      tileDraw(ctx, bl, camX * PPM, ROAD_TOP + 3 - bl._lh);
+    }
     else {
       const blk = 3, b0 = Math.floor(camX / blk) * blk;
       for (let m = b0; m < camX + W / PPM + blk; m += blk) {
@@ -898,7 +932,7 @@ const RENDER = (function () {
       }
     }
     /* strada */
-    const newRoad = ENV === 'citta' && okImg(ROADIMG);
+    const newRoad = (ENV === 'citta' || T.gok) && okImg(ROADIMG);
     if (newRoad) { tileDraw(ctx, ROADIMG, off, IND_ROAD.top); roadDecals(ctx, camX, st.dist || 402); }
     else {
       tileDraw(ctx, T.as, off, ROAD_TOP);
@@ -916,7 +950,7 @@ const RENDER = (function () {
       const y = LB[i] - T.dash[i - 1].height / 2, per = 12;
       for (let m = Math.floor(camX / per) * per; m < camX + W / PPM + per; m += per) ctx.drawImage(T.dash[i - 1], Math.round((m - camX) * PPM), Math.round(y));
     }
-    if (ENV === 'citta' && CURB && CURB.complete && CURB.width) {
+    if ((ENV === 'citta' || T.gok) && CURB && CURB.complete && CURB.width) {
       /* sotto la pista: marciapiede di cemento e prato pulito, poi l'erba di Christian sul bordo dello schermo */
       if (!T.low) {
         const lw = 512, lh = H - ROAD_BOT, cv = mkHi(lw, lh), g = cv.getContext('2d');
@@ -941,7 +975,7 @@ const RENDER = (function () {
       ctx.beginPath(); ctx.moveTo(sx(0) + 6, ROAD_TOP + 10); ctx.lineTo(sx(0) + 6 + 0.3 * PPM, ROAD_TOP + 10); ctx.lineTo(sx(0) + 0.42 * PPM, ROAD_BOT - 12); ctx.lineTo(sx(0), ROAD_BOT - 12); ctx.closePath();
       ctx.fillStyle = 'rgba(245,238,222,0.9)'; ctx.fill();
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-      for (let i = 0; i < 4; i++) { const y = LB[i] + LH[i] * 0.45, fs = 20 + i * 5; ctx.font = fd(900, fs); ctx.lineWidth = 4; ctx.strokeStyle = INK; ctx.strokeText(String(i + 1), sx(1.6) + i * 3, y); ctx.fillStyle = '#f5eede'; ctx.fillText(String(i + 1), sx(1.6) + i * 3, y); }
+      for (let i = 0; i < 4; i++) { const y = LB[i] + LH[i] * 0.45, fs = 20 + i * 5; ctx.font = fd(900, fs); ctx.lineWidth = 4; ctx.strokeStyle = INK; ctx.strokeText(String(4 - i), sx(1.6) + i * 3, y); ctx.fillStyle = '#f5eede'; ctx.fillText(String(4 - i), sx(1.6) + i * 3, y); }
     }
     const fin = st.dist;
     if (vis(fin)) {
@@ -951,12 +985,12 @@ const RENDER = (function () {
       }
     }
     for (let m = 50; m < fin; m += 50) if (vis(m)) signBoard(ctx, sx(m), m + ' m');
-    for (let m = -40; m < fin + 700; m += 32) if (vis(m) && !(ENV === 'citta' && Math.abs(m) < 14)) lamp(ctx, sx(m), Math.round(m / 32));
+    for (let m = -40; m < fin + 700; m += 32) if (vis(m) && !((ENV === 'citta' || T.gok) && Math.abs(m) < 14)) lamp(ctx, sx(m), Math.round(m / 32));
     if (vis(fin)) finishFlag(ctx, sx(fin), fin);
   }
 
   function signBoard(ctx, x, label) {
-    if (ENV === 'citta' && SIGNI && okImg(SIGNI.blank)) {
+    if ((ENV === 'citta' || T.gok) && SIGNI && okImg(SIGNI.blank)) {
       /* cartelli di Christian: 100 e 200 sono disegnati, gli altri usano il cartello vuoto con il numero scritto sopra */
       const n = parseInt(label, 10), im = n === 100 && okImg(SIGNI.s100) ? SIGNI.s100 : n === 200 && okImg(SIGNI.s200) ? SIGNI.s200 : SIGNI.blank;
       const k = SIGNS.k, w = im.width / k, h = im.height / k, x0 = Math.round(x - w / 2), y0 = 418 - h;
@@ -1008,7 +1042,7 @@ const RENDER = (function () {
   function trafficLight(ctx, camX, phase, redLit) {
     const x = (-1.2 - camX) * PPM;
     if (x < -420 || x > W + 300) return;
-    if (ENV === 'citta' && okImg(LIGHTS5)) {
+    if ((ENV === 'citta' || T.gok) && okImg(LIGHTS5)) {
       /* pannello a 5 luci appeso a un braccio: spente al posizionamento, rosse al via, verdi in gara */
       const GN = GANTRY && okImg(GANTRY) ? GANTRY : null;
       const s = GN ? 0.85 : 0.8, pw = LIGHTS5.width * s, ph = LIGHTS5.height * s;
@@ -1067,7 +1101,7 @@ const RENDER = (function () {
   /* cerchi intercambiabili delle auto nuove e logo per gli adesivi */
   const RIMS = {}; (typeof CAR_RIMS !== 'undefined' ? CAR_RIMS : []).forEach(r => { RIMS[r.id] = img(r.img); });
   const ZAIMG = typeof ZA_LOGO !== 'undefined' ? img(ZA_LOGO) : null;
-  IND.map(b => b.im).concat(JERSEY ? [JERSEY] : [], RAIL ? [RAIL] : [], BANNERS, FENCE ? [FENCE] : [], CURB ? [CURB] : [], ROADIMG ? [ROADIMG] : [], LIGHTS5 ? [LIGHTS5] : [], GANTRY ? [GANTRY] : [], LAMPS ? [LAMPS.red, LAMPS.green] : [], SLAMPS.map(l => l.im), DECALS, SKYL ? [SKYL] : [], SKYI ? [SKYI.sun].concat(SKYI.clouds) : [], PROPI, GRASSI ? [GRASSI] : [], SIGNI ? [SIGNI.s100, SIGNI.s200, SIGNI.blank] : [], HFLAG ? HFLAG.f : [], HFIN ? HFIN.f : [], BGL ? [BGL.hills, BGL.village, BGL.factories] : [], BGX, FXS, FXF, FANIMG.flat()).forEach(i => loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()));
+  IND.map(b => b.im).concat(JERSEY ? [JERSEY] : [], RAIL ? [RAIL] : [], BANNERS, FENCE ? [FENCE] : [], CURB ? [CURB] : [], ROADIMG ? [ROADIMG] : [], LIGHTS5 ? [LIGHTS5] : [], GANTRY ? [GANTRY] : [], LAMPS ? [LAMPS.red, LAMPS.green] : [], SLAMPS.map(l => l.im), DECALS, SKYL ? [SKYL] : [], SKYI ? [SKYI.sun].concat(SKYI.clouds) : [], GIMG ? Object.values(GIMG) : [], PROPI, GRASSI ? [GRASSI] : [], SIGNI ? [SIGNI.s100, SIGNI.s200, SIGNI.blank] : [], HFLAG ? HFLAG.f : [], HFIN ? HFIN.f : [], BGL ? [BGL.hills, BGL.village, BGL.factories] : [], BGX, FXS, FXF, FANIMG.flat()).forEach(i => loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()));
   const ready = Promise.all(loads);
   const SHAPES = {};
   Object.keys(CARMAP).forEach(id => {
@@ -1535,6 +1569,13 @@ const RENDER = (function () {
         const tx = x - S.L * sc - 46, ty = y - 0.6 * sc;
         ctx.beginPath(); ctx.moveTo(tx - 30, ty - 16); ctx.lineTo(tx + 18, ty - 16); ctx.lineTo(tx + 34, ty); ctx.lineTo(tx + 18, ty + 16); ctx.lineTo(tx - 30, ty + 16); ctx.closePath(); inked(ctx, '#ffd23f', 3);
         ctx.fillStyle = INK; ctx.font = fd(900, 22); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(TX('hud.you'), tx - 4, ty + 1, 46);
+      }
+      /* nome del pilota dietro la sua auto, prima del via e nei primi secondi */
+      else if (st.hud && r.name && (st.phase === 'stage' || st.phase === 'red' || r.time < 1.6)) {
+        ctx.font = fd(900, 15); const nm = r.name.toUpperCase(), tw = Math.min(150, ctx.measureText(nm).width + 18);
+        const tx = x - S.L * sc - 12 - tw / 2, ty = y - 0.55 * sc;
+        rrect(ctx, tx - tw / 2, ty - 12, tw, 24, 8); inked(ctx, cs.glow || '#ffffff', 2.5);
+        ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nm, tx, ty + 1, tw - 10);
       }
     });
     drawParts(ctx, st.camX);

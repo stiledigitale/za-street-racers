@@ -20,7 +20,7 @@ const I18N = {
 
   /* menu */
   'menu.kicker': ["Drag racing · ¼ di miglio", "Drag racing · ¼ mile", "Drag Racing · ¼ Meile", "Drag racing · ¼ de milla", "Drag racing · ¼ de mile"],
-  'menu.tag': ["Quattro corsie, un quarto di miglio, il tempo lo fa la tua mano.", "Four lanes, a quarter mile, and the time is in your hands.", "Vier Spuren, eine Viertelmeile – die Zeit liegt in deiner Hand.", "Cuatro carriles, un cuarto de milla: el tiempo lo marca tu mano.", "Quatre voies, un quart de mile : le chrono est entre tes mains."],
+  'menu.tag': ["Una strada, un quarto di miglio, il tempo dipende da te!", "One street, a quarter mile, the time is up to you!", "Eine Straße, eine Viertelmeile, die Zeit liegt bei dir!", "Una calle, un cuarto de milla, ¡el tiempo depende de ti!", "Une rue, un quart de mile, le chrono dépend de toi !"],
   'menu.quick': ["Gara singola", "Quick race", "Einzelrennen", "Carrera rápida", "Course rapide"],
   'menu.quickSub': ["Tu contro tre CPU", "You against three CPUs", "Du gegen drei KI-Fahrer", "Tú contra tres CPU", "Toi contre trois IA"],
   'menu.career': ["Carriera", "Career", "Karriere", "Carrera profesional", "Carrière"],
@@ -120,8 +120,11 @@ const I18N = {
   'menu.online': ["ONLINE", "ONLINE", "ONLINE", "ONLINE", "EN LIGNE"],
   'menu.onlineSub': ["2-4 piloti veri", "2-4 real drivers", "2-4 echte Fahrer", "2-4 pilotos reales", "2-4 vrais pilotes"],
   'on.title': ["Sfida altri piloti in diretta", "Race real drivers live", "Fahre live gegen echte Fahrer", "Desafía a pilotos reales en directo", "Affronte de vrais pilotes en direct"],
-  'on.desc': ["Partita veloce ti mette con chi sta cercando adesso. Oppure crea una stanza e manda il codice agli amici.", "Quick match pairs you with whoever is searching now. Or create a room and send the code to your friends.", "Schnelles Spiel bringt dich mit allen zusammen, die gerade suchen. Oder erstelle einen Raum und schick den Code an Freunde.", "Partida rápida te une con quien busca ahora. O crea una sala y envía el código a tus amigos.", "Partie rapide t'associe à ceux qui cherchent maintenant. Ou crée un salon et envoie le code à tes amis."],
+  'on.desc': ["Sfida a 2 o a 4: il gioco ti mette con chi sta cercando adesso. Oppure crea una stanza e manda il codice agli amici.", "Quick match pairs you with whoever is searching now. Or create a room and send the code to your friends.", "Schnelles Spiel bringt dich mit allen zusammen, die gerade suchen. Oder erstelle einen Raum und schick den Code an Freunde.", "Partida rápida te une con quien busca ahora. O crea una sala y envía el código a tus amigos.", "Partie rapide t'associe à ceux qui cherchent maintenant. Ou crée un salon et envoie le code à tes amis."],
   'on.quick': ["PARTITA VELOCE", "QUICK MATCH", "SCHNELLES SPIEL", "PARTIDA RÁPIDA", "PARTIE RAPIDE"],
+  'on.quick2': ["SFIDA A 2", "1 VS 1", "DUELL ZU 2", "DUELO A 2", "DUEL À 2"],
+  'on.quick4': ["SFIDA A 4", "4 PLAYERS", "RENNEN ZU 4", "CARRERA A 4", "COURSE À 4"],
+  'on.searchN': ["Cerco una sfida a {0}…", "Looking for a {0}-player race…", "Suche ein Rennen zu {0}…", "Buscando una carrera a {0}…", "Recherche d'une course à {0}…"],
   'on.create': ["CREA STANZA", "CREATE ROOM", "RAUM ERSTELLEN", "CREAR SALA", "CRÉER UN SALON"],
   'on.join': ["ENTRA", "JOIN", "BEITRETEN", "ENTRAR", "REJOINDRE"],
   'on.codePh': ["CODICE", "CODE", "CODE", "CÓDIGO", "CODE"],

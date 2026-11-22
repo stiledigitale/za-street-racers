@@ -445,10 +445,10 @@
     ON.code = null; ON.peers = []; ON.inRace = false;
     try { history.replaceState(null, '', location.pathname + (NET.LOCAL ? '?net=local' : '')); } catch (e) { }
   }
-  async function onQuick() {
+  async function onQuick(N) {
     onLeaveRoom(); onView(false); onMsg(T('on.searching'));
     let q;
-    try { q = await NET.channel('quick'); } catch (e) { onMsg(T('on.fail')); return; }
+    try { q = await NET.channel('quick' + N); } catch (e) { onMsg(T('on.fail')); return; }
     ON.quick = q;
     const me = { id: NET.myId, at: Date.now() }; let list = [];
     q.on('match', d => { if (d && d.ids && d.ids.includes(NET.myId) && ON.quick === q) { onLeaveRoom(); onOpenRoom(d.code, d.ids.length); } });
@@ -457,9 +457,9 @@
     ON.qT = setInterval(() => {
       if (ON.quick !== q) { clearInterval(ON.qT); return; }
       const s = list.slice().sort((a, b) => a.at - b.at);
-      onMsg(T('on.searching') + (s.length > 1 ? ' (' + s.length + ')' : ''));
-      if (s.length && s[0].id === NET.myId && (s.length >= 4 || (s.length >= 2 && Date.now() - me.at > 6000))) {
-        const ids = s.slice(0, 4).map(x => x.id), code = newCode();
+      onMsg(T('on.searchN', N) + ' · ' + s.length + '/' + N);
+      if (s.length && s[0].id === NET.myId && s.length >= N) {
+        const ids = s.slice(0, N).map(x => x.id), code = newCode();
         q.send('match', { code: code, ids: ids });
         setTimeout(() => { onLeaveRoom(); onOpenRoom(code, ids.length); }, 300);
         clearInterval(ON.qT);
@@ -487,13 +487,16 @@
     const pc = SIM.buildCar(CAR(save.car), save.cars[save.car].mods), cos = cosmFor(save.car);
     const p = SIM.makeRacer(pc, { name: pilotName(save.pilot), lane: 3, paint: cos.paint && cos.paint !== 'orig' ? cos.paint : pc.color });
     p.cosm = Object.assign({ glow: '#ffd23f' }, cos); p.flameT = 0; p.puffT = 0; p.pilot = save.pilot;
-    const list = [p]; let lane = 2;
-    d.peers.forEach(pe => {
-      if (pe.id === NET.myId || lane < 0) return;
+    /* in due si corre nelle corsie centrali */
+    const others = d.peers.filter(pe => pe.id !== NET.myId).slice(0, 3), lanes = others.length === 1 ? [1] : [2, 1, 0];
+    if (others.length === 1) p.lane = 2;
+    const list = [p]; let li = 0;
+    others.forEach(pe => {
+      const lane = lanes[li++];
       const base = CAR(pe.car) || CAR(ROSTER[0]), cz = pe.cosm || {};
       const r = SIM.makeRacer(SIM.buildCar(base, {}), { name: pe.name, lane: lane, paint: cz.paint && cz.paint !== 'orig' ? cz.paint : base.color });
       r.cosm = Object.assign({ glow: ['#19c3d1', '#ff2e7e', '#8a3cf0'][lane % 3] }, cz); r.flameT = 0; r.puffT = 0; r.pilot = pe.pilot || 0;
-      r.remote = pe.id; r.nShift = 0; lane--;
+      r.remote = pe.id; r.nShift = 0;
       list.push(r);
     });
     return { list, p };
@@ -554,7 +557,7 @@
     else if (a === 'menu') { if (G.mode === 'online') onLeaveRoom(); goMenu(); }
     else if (a === 'online') { G.phase = 'menu'; onOpenScreen(); }
     else if (a === 'onExit') { onLeaveRoom(); goMenu(); }
-    else if (a === 'onQuick') onQuick();
+    else if (a === 'onQuick') onQuick(+b.dataset.n || 2);
     else if (a === 'onCreate') onOpenRoom(newCode(), 0);
     else if (a === 'onJoin') { const c = $('onCode').value.trim().toUpperCase(); if (!/^[A-Z]{5}$/.test(c)) onMsg(T('on.badCode')); else onOpenRoom(c, 0, true); }
     else if (a === 'onLeave') { onLeaveRoom(); onView(false); onMsg(''); }
