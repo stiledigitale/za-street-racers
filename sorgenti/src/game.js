@@ -187,7 +187,14 @@
       if (pr && pr.then) pr.then(lock).catch(() => { }); else lock();
     } catch (e) { }
   }
-  $('btnFull').addEventListener('click', goFull);
+  /* schermo intero sempre a portata di mano, in tutte le schermate: entra ed esce */
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const canFs = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  $('btnFull').hidden = !canFs;
+  $('btnFull').addEventListener('click', () => {
+    if (fsEl()) { const ex = document.exitFullscreen || document.webkitExitFullscreen; try { ex && ex.call(document); } catch (e) { } }
+    else goFull();
+  });
   $('trackSeg').addEventListener('click', e => {
     const b = e.target.closest('[data-t]'); if (!b) return;
     save.track = b.dataset.t; persist(); AUDIO.init(); AUDIO.fx('click');

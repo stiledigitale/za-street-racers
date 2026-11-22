@@ -365,7 +365,11 @@ td.r, th.r { text-align: right; }
 .mlang .llist button:hover { background: #3a4058; }
 .mlang .llist button.on { background: #ffd84a; color: var(--ink); }
 #scrMenu .gcash { position: static; height: 7cqh; }
-.mfull { position: static; width: 7.6cqh; height: 7.6cqh; font-size: 1.3em; padding: 0; }
+.mfull { position: absolute; top: 1.7cqh; right: 1.4cqw; width: 7.6cqh; height: 7.6cqh; font-size: 3.2cqh; padding: 0; z-index: 50; }
+.mfull[hidden] { display: none; }
+#scrMenu .mtop { padding-right: calc(1.4cqw + 9.5cqh); }
+#scrGarage .gcash { right: calc(2.4cqw + 7.6cqh); }
+#scrResults, #scrOnline, #scrRules, #scrCareer, #scrPilots, #scrPause { padding-right: calc(1.4cqw + 9cqh); }
 .mlogo { position: absolute; left: 3cqw; top: 14cqh; width: 44cqw; }
 #scrMenu .brand h1 { font-size: 2.75em; margin: 0; }
 #scrMenu .mlogo { width: 60cqw; }
@@ -428,6 +432,7 @@ td.r, th.r { text-align: right; }
     <button id="btnGas" class="imgbtn" type="button" aria-label="Accelera" data-i18n-aria="btn.gas"><img alt="" id="imgGas"><span data-i18n="btn.gas">ACCELERA</span></button>
     <button id="btnShift" class="imgbtn" type="button" aria-label="Cambio" data-i18n-aria="btn.shift"><img alt="" id="imgShift"><span data-i18n="btn.shift">CAMBIO</span></button>
   </div>
+  <button class="gbtn dark mfull" id="btnFull" type="button" aria-label="Schermo intero">⛶</button>
   <div id="corner">
     <button id="btnPause" class="imgbtn" type="button" aria-label="Pausa" data-i18n-aria="btn.pause"><img alt="" id="imgPause"></button>
     <button id="btnSound" type="button" data-i18n="audio.on">AUDIO ON</button>
@@ -439,7 +444,6 @@ td.r, th.r { text-align: right; }
       <span class="mcar" id="menuCar"></span>
       <div class="mlang" id="langSeg"></div>
       <div class="gcash"><b>€</b><span id="menuCredits"></span></div>
-      <button class="gbtn dark mfull" id="btnFull" type="button" aria-label="Schermo intero">⛶</button>
     </div>
     <div class="brand mlogo">
       <h1 aria-label="ZA Street Racers"><span class="l1"><img id="zaLogo" class="za" alt="ZA"> STREET</span> <span class="l2">RACERS</span></h1>
