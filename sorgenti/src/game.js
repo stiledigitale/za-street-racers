@@ -228,7 +228,7 @@
     G.racers.forEach(r => { if (r.ai) SIM.aiPrepare(r, G.cfg, Math.random); });
     G.lz = SIM.launchZone(G.player.car, G.cfg); G.sz = SIM.shiftZone(G.player.car, G.cfg);
     G.phase = 'stage'; G.phaseT = 0; G.redDur = od ? od.redDur : 2 + Math.random() * 3; G.sendT = 0; G.raceT = 0; G.redLit = false; G.msg = null;
-    cheer.a = 0.3; cheer.b = 0.15; cheer.done = false; G.camX = -camOff(); look = 0; acc = 0; G.hud = true; G.paused = false; G.finishT = 0; G.pos = 1;
+    cheer.a = 0.3; cheer.b = 0.15; cheer.done = false; G.camX = -camOff(); look = 0; acc = 0; G.hud = true; G.paused = false; G.finishT = 0; G.pos = 1; G.stopT = 0;
     input.gas = false; input.shiftQ = 0;
     RENDER.clearParts();
     showScreen(null);
@@ -316,7 +316,7 @@
         G.finishT += dt;
         const all = G.racers.every(r => r.finished || r.blown || r.gone);
         if (G.mode === 'online') onSendState(dt);
-        if ((all && G.finishT > 5.5) || G.finishT > 25) showResults();
+        if ((all && G.finishT > 2.6) || G.finishT > 25) showResults();
       }
     }
   }
@@ -347,7 +347,11 @@
   /* ---------- audio per fotogramma ---------- */
   function audioFrame() {
     const p = G.player;
-    const active = isRacing() && !G.paused && p;
+    let active = isRacing() && !G.paused && p;
+    if (p && G.phase === 'results') {
+      G.stopT = p.v < 0.3 ? (G.stopT || 0) + 1 / 60 : 0;
+      active = G.stopT < 2.5;
+    }
     if (!active) { AUDIO.update({ active: false }); return; }
     let near = null, nd = 1e9;
     G.racers.forEach(r => { if (r !== p && Math.abs(r.x - p.x) < nd) { nd = Math.abs(r.x - p.x); near = r; } });
@@ -389,7 +393,7 @@
   let last = performance.now(), acc = 0, sway = 0;
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    perfFrame(dt);
+    perfFrame(dt); musicFrame();
     if (isRacing()) {
       if (!G.paused) {
         acc += dt;
@@ -402,7 +406,13 @@
       RENDER.frame(ctx, { crowd: cheerFrame(dt, G.camX, G.dist, false), camX: G.camX, phase: G.phase, redLit: G.redLit, racers: G.racers, player: G.player, dist: G.dist, hud: true, lz: G.lz, sz: G.sz, msg: G.msg, pos: G.pos, leadGap: G.leadGap });
     } else if (G.phase === 'results') {
       acc += dt;
-      while (acc >= SIM.DT) { savePrev(); G.racers.forEach(r => { if (r.remote) remoteStep(r, SIM.DT); else SIM.stepRace(r, SIM.DT, G.cfg, Math.random); }); acc -= SIM.DT; }
+      /* anche sotto la classifica le auto continuano: frenano, scalano e si fermano, poi il motore si spegne */
+      while (acc >= SIM.DT) { savePrev(); G.racers.forEach(r => {
+        if (r.remote) remoteStep(r, SIM.DT); else SIM.stepRace(r, SIM.DT, G.cfg, Math.random);
+        if (r.flameT > 0) r.flameT -= SIM.DT;
+        r.events.forEach(ev => { if (ev.t === 'down' && Math.random() < 0.3) { r.flameT = 0.15; if (r === G.player) AUDIO.fx('backfire'); } });
+        r.events.length = 0;
+      }); acc -= SIM.DT; }
       interp(acc / SIM.DT);
       RENDER.stepParts(dt); camera(dt);
       ctx.setTransform(CK2, 0, 0, CK2, 0, 0);
@@ -615,7 +625,7 @@
   async function netCounter() {
     try {
       const ch = await NET.channel('online');
-      ch.onPeers(list => { const n = list.filter(Boolean).length; $('netCount').hidden = n < 1; $('netCount').textContent = T('lb.online', n); });
+      ch.onPeers(list => { const n = list.filter(Boolean).length; $('netCount').hidden = n < 1; $('netCount').textContent = n; });
       ch.track({ id: NET.myId, at: Date.now() });
     } catch (e) { }
   }
@@ -670,6 +680,10 @@
   $('btnSound').addEventListener('click', () => {
     save.audio.on = !save.audio.on; AUDIO.init(); AUDIO.setEnabled(save.audio.on); persist(); syncSoundBtn();
   });
+  /* musica del menu: parte nelle schermate fuori gara, si ferma in gara */
+  function syncMusicBtn() { const b = $('btnMusic'); if (b) { b.textContent = '♪ ' + (save.music !== false ? 'ON' : 'OFF'); b.classList.toggle('off', save.music === false); } }
+  $('btnMusic').addEventListener('click', () => { save.music = save.music === false; AUDIO.init(); persist(); syncMusicBtn(); });
+  function musicFrame() { AUDIO.music(save.music !== false && save.audio.on && !isRacing() && G.phase !== 'results'); }
   function syncSoundBtn() { $('btnSound').textContent = T(save.audio.on ? 'audio.on' : 'audio.off'); }
 
   /* ---------- garage ---------- */
@@ -1100,7 +1114,7 @@
   function boot() {
     paperTex(); fitCanvas();
     scene(save.track, save.light);
-    syncSoundBtn(); goMenu(); setTimeout(netCounter, 1500);
+    syncSoundBtn(); syncMusicBtn(); goMenu(); setTimeout(netCounter, 1500);
     const rm = (location.search.match(/[?&]room=([A-Za-z]{5})/) || [])[1];
     if (rm) { onOpenScreen(); onOpenRoom(rm.toUpperCase(), 0, true); }
     requestAnimationFrame(t => { last = t; requestAnimationFrame(loop); });

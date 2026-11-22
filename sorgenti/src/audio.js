@@ -199,5 +199,50 @@ const AUDIO = (function () {
     volume = v;
     if (master && enabled) master.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
   }
-  return { init, update, fx, crowd, setEnabled, setVolume, get enabled() { return enabled; }, get volume() { return volume; } };
+  /* ---------- musica del menu: brano street racing generato in Web Audio (nessun file, nessun diritto)
+     126 BPM, La minore, giro La-Fa-Do-Sol: cassa dritta, rullante, charleston, basso distorto,
+     accordi a colpi e un arpeggio che entra nella seconda metà ---------- */
+  let mus = null;
+  const BPM = 126, S16 = 60 / BPM / 4;
+  const PROG = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]], BASSN = [33, 29, 36, 31];
+  const mf = n => 440 * Math.pow(2, (n - 69) / 12);
+  function mNoise(t, hp, peak, dec) {
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf; const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp;
+    const g = ctx.createGain(); g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dec);
+    s.connect(f); f.connect(g); g.connect(mus.g); s.start(t, Math.random() * 1.5); s.stop(t + dec + 0.02);
+  }
+  function mTone(t, freq, type, peak, dur, lp, det) {
+    const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq; if (det) o.detune.value = det;
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(lp, t); f.frequency.exponentialRampToValueAtTime(Math.max(120, lp * 0.3), t + dur);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(f); f.connect(g); g.connect(mus.g); o.start(t); o.stop(t + dur + 0.03);
+  }
+  function mStep(i, t) {
+    const st = i % 16, bar = Math.floor(i / 16) % 16, ch = Math.floor(bar / 2) % 4, full = bar >= 4, lead = bar >= 8;
+    /* cassa */
+    if (st % 4 === 0) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+      g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3); o.connect(g); g.connect(mus.g); o.start(t); o.stop(t + 0.32); }
+    /* rullante e battito di mani */
+    if (full && (st === 4 || st === 12)) { mNoise(t, 1500, 0.32, 0.16); mTone(t, 190, 'triangle', 0.18, 0.08, 2000); }
+    if (bar % 4 === 3 && st >= 12) mNoise(t, 1800, 0.12 + (st - 12) * 0.04, 0.08);
+    /* charleston */
+    if (st % 2 === 0) mNoise(t, 7500, st % 4 === 2 ? 0.09 : 0.04, st % 4 === 2 ? 0.07 : 0.03);
+    /* basso: sedicesimi sincopati, ottava sopra in levare */
+    if ([0, 2, 3, 6, 8, 10, 11, 14].includes(st)) { const n = BASSN[ch] + (st === 6 || st === 14 ? 12 : 0) + 12; mTone(t, mf(n), 'sawtooth', 0.2, S16 * 1.6, 900); mTone(t, mf(n), 'square', 0.08, S16 * 1.6, 500, 8); }
+    /* accordi a colpi */
+    if (full && (st === 0 || st === 7 || st === 10)) PROG[ch].forEach(n => { mTone(t, mf(n), 'sawtooth', 0.045, S16 * 2.2, 2400, -7); mTone(t, mf(n), 'sawtooth', 0.045, S16 * 2.2, 2400, 7); });
+    /* arpeggio */
+    if (lead) { const ns = PROG[ch], n = ns[[0, 1, 2, 1][st % 4]] + 12 + (st >= 8 ? 12 : 0); mTone(t, mf(n), 'square', 0.035, S16 * 0.9, 3200); }
+  }
+  function music(on) {
+    if (!ready) return;
+    if (on && !mus) {
+      mus = { g: ctx.createGain(), i: 0, next: ctx.currentTime + 0.08 };
+      mus.g.gain.value = 0; mus.g.connect(master); mus.g.gain.setTargetAtTime(0.34, ctx.currentTime, 0.5);
+      mus.iv = setInterval(() => { if (!mus) return; while (mus.next < ctx.currentTime + 0.15) { mStep(mus.i, mus.next); mus.next += S16; mus.i++; } }, 30);
+    } else if (!on && mus) {
+      const m = mus; mus = null; clearInterval(m.iv); m.g.gain.setTargetAtTime(0, ctx.currentTime, 0.2); setTimeout(() => m.g.disconnect(), 1500);
+    }
+  }
+  return { init, update, fx, crowd, setEnabled, setVolume, music, get enabled() { return enabled; }, get volume() { return volume; } };
 })();

@@ -360,6 +360,8 @@ td.r, th.r { text-align: right; }
 .mpilot .av { width: 7cqh; height: 7cqh; margin: 0; border-radius: 0.45em; box-shadow: none; }
 .mcar { font-family: var(--f-d); font-style: italic; font-weight: 900; text-transform: uppercase; color: #ffd84a; font-size: 1.1em; text-shadow: 0.07em 0.09em 0 var(--ink); }
 .mlang { margin-left: auto; position: relative; font-size: 0.95em; z-index: 20; }
+.mmusic { height: 7cqh; padding: 0 0.7em; margin-left: 0.5em; border: 0.18em solid var(--ink); border-radius: 0.6em; background: linear-gradient(#ff8a3d, #e5521c); box-shadow: 0 0.18em 0 var(--ink); color: #fff; font-family: var(--f-d); font-weight: 900; font-style: italic; font-size: 0.95em; cursor: pointer; text-shadow: 0.07em 0.09em 0 var(--ink); white-space: nowrap; }
+.mmusic.off { background: linear-gradient(#3a4058, #262b3e); color: #aab; }
 .mlang .flag { width: 1.6em; height: 1.07em; border: 0.1em solid var(--ink); border-radius: 0.2em; flex: none; display: block; }
 .mlang .lcur { display: flex; align-items: center; gap: 0.4em; height: 7cqh; padding: 0 0.6em; border: 0.18em solid var(--ink); border-radius: 0.6em; background: linear-gradient(#3a4058, #262b3e); box-shadow: 0 0.18em 0 var(--ink); color: #fff; font-family: var(--f-d); font-weight: 900; font-style: italic; font-size: 1em; cursor: pointer; }
 .mlang .lcur i { font-style: normal; color: #ffd84a; font-size: 0.8em; transition: transform .15s; }
@@ -463,6 +465,7 @@ td.r, th.r { text-align: right; }
       <button class="mpilot" data-act="pilots" type="button"><i class="av" id="menuAv"></i><span id="menuPilot"></span></button>
       <span class="mcar" id="menuCar"></span>
       <div class="mlang" id="langSeg"></div>
+      <button class="mmusic" id="btnMusic" type="button" aria-label="Musica">♪ ON</button>
       <div class="gcash"><b>€</b><span id="menuCredits"></span></div>
     </div>
     <div class="brand mlogo">

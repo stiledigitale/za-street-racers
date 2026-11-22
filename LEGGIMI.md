@@ -39,3 +39,9 @@ Come Tactical Racing Simulator: **Supabase Realtime**, progetto `stiledigitale_g
 - Pulsante "Classifica online" nel menu (al posto di Regole), con le schede delle due piste e i primi 20.
 - In alto a destra, sotto lo schermo intero, il numero dei piloti collegati (presence sul canale `zsr-online`).
 - Inoltre: scalate dopo il traguardo, zona verde più stretta a ogni marcia, classi di potenziamento (Serie, Sport, Pro, Élite) usate dalla partita veloce online, potenziamenti più cari (500 / 1200 / 2500).
+
+## Grafica e musica (22/11/2026, sera)
+- Cartelli delle distanze di Christian ogni 100 m, 402 m e ARRIVO al traguardo; ragazze di partenza (bandiera verde) e arrivo (scacchi) animate, un po' più grandi.
+- Bordo basso dello schermo: recinzione con siepe (metallo in zona industriale, legno al Garda) e cespugli; alberi dietro al muro; nuova fabbrica tra gli edifici di sfondo.
+- Fiammata più piccola; dopo il traguardo le auto continuano a frenare e scalare anche sotto la classifica, poi il motore si spegne.
+- Musica street racing del menu generata in Web Audio (nessun file), con pulsante ♪ ON/OFF in alto. Contatore online: solo il numero.

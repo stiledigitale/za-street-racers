@@ -380,7 +380,7 @@ const RENDER = (function () {
       T.hl = mirror(BGL.hills, BASE - 18);
       T.fa = mirror(BGL.village, BASE - 2);
       /* fila delle fabbriche: il complesso grande e gli altri edifici di Christian, alternati con un po' di spazio */
-      const kk = BG_LAYERS.k || 1, row = [BGL.factories, BGX[0], BGX[2], BGX[3], BGX[1]].filter(i => i && i.complete && i.width);
+      const kk = BG_LAYERS.k || 1, row = [BGL.factories, BGX[0], BGX[4], BGX[2], BGX[3], BGX[1]].filter(i => i && i.complete && i.width);
       const gap = 60, tw = row.reduce((a, i) => a + i.width / kk + gap, 0), cv = mkHi(tw, 420), c2 = cv.getContext('2d');
       let xx = gap / 2; row.forEach(i => { const fw = i.width / kk, fh = i.height / kk; c2.drawImage(i, xx, BASE + 6 - fh, fw, fh); xx += fw + gap; });
       shadeLight(c2, tw, 420); T.bd = cv;
@@ -706,6 +706,16 @@ const RENDER = (function () {
   const GRASSI = typeof GRASS !== 'undefined' ? mkImg(GRASS.img) : null;
   const SIGNI = typeof SIGNS !== 'undefined' ? { s100: mkImg(SIGNS.s100), s200: mkImg(SIGNS.s200), blank: mkImg(SIGNS.blank) } : null;
   const okImg = i => i && i.complete && i.width;
+  /* cartelli delle distanze, vegetazione e recinzioni basse di Christian */
+  const DSI = typeof DIST_SIGNS !== 'undefined' ? Object.fromEntries(Object.entries(DIST_SIGNS).filter(([k]) => k !== 'k').map(([k, u]) => [k, mkImg(u)])) : null;
+  const VEGI = typeof VEG !== 'undefined' ? Object.fromEntries(Object.entries(VEG).filter(([k]) => k !== 'k').map(([k, u]) => [k, mkImg(u)])) : null;
+  const LFI = typeof LOW_FENCE !== 'undefined' ? Object.fromEntries(Object.entries(LOW_FENCE).filter(([k]) => k !== 'k').map(([k, u]) => [k, mkImg(u)])) : null;
+  function distSign(ctx, x, im) {
+    if (!okImg(im)) return;
+    const k = DIST_SIGNS.k / 1.25, w = im.width / k, h = im.height / k, x0 = Math.round(x - w / 2), y0 = 420 - h;
+    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(x, 420, w * 0.3, 3, 0, 0, TAU); ctx.fill();
+    ctx.drawImage(im, x0, y0, w, h);
+  }
   /* oggetti sull'asfalto in posizioni casuali ma sempre uguali (un tratto ogni 18 m) */
   const dhash = n => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
   function roadDecals(ctx, camX, fin) {
@@ -917,6 +927,16 @@ const RENDER = (function () {
     /* marciapiede e new jersey */
     ctx.fillStyle = P.walk; ctx.fillRect(0, BASE, W, 14);
     ctx.fillStyle = INK; ctx.fillRect(0, BASE, W, 3);
+    if (ENV === 'citta' && VEGI && okImg(VEGI.tree)) {
+      /* alberi dietro al muro, ogni tanto, lontano dai tifosi */
+      const tr = VEGI.tree, th = 150, tw = tr.width * th / tr.height, seg = 19, fin = st.dist;
+      for (let i = Math.floor((camX - 10) / seg); i * seg < camX + W / PPM + 10; i++) {
+        if (dhash(i * 2.3 + 7.1) > 0.45) continue;
+        const m = i * seg + dhash(i + 0.55) * 8; if ((m > -20 && m < 18) || (fin && m > fin - 22 && m < fin + 32)) continue;
+        const sc = 0.85 + dhash(i + 0.12) * 0.3;
+        ctx.drawImage(tr, Math.round((m - camX) * PPM - tw * sc / 2), Math.round(441 - th * sc), tw * sc, th * sc);
+      }
+    }
     drawCrowd(ctx, st);
     if (ENV === 'citta' && T.fence) industrialBarrier(ctx, camX, st.dist);
     if (ENV === 'citta') sideProps(ctx, camX, st.dist);
@@ -961,10 +981,9 @@ const RENDER = (function () {
       if (!T.low) {
         const lw = 512, lh = H - ROAD_BOT, cv = mkHi(lw, lh), g = cv.getContext('2d');
         const night = P.night, side = night ? '#5d5f78' : '#c9c6c0', sideD = night ? '#45475e' : '#a9a59f', lawn = night ? '#2e5a3a' : '#79b83f', lawnD = night ? '#244a2f' : '#5f9c32';
-        const sw = 34;
+        const sw = LFI ? 6 : 34;
         g.fillStyle = side; g.fillRect(0, 0, lw, sw);
-        g.fillStyle = sideD; for (let x = 0; x < lw; x += 64) g.fillRect(x, 0, 3, sw);
-        g.fillRect(0, sw - 5, lw, 5);
+        if (!LFI) { g.fillStyle = sideD; for (let x = 0; x < lw; x += 64) g.fillRect(x, 0, 3, sw); g.fillRect(0, sw - 5, lw, 5); }
         g.fillStyle = INK; g.fillRect(0, sw, lw, 3);
         const gr = g.createLinearGradient(0, sw, 0, lh); gr.addColorStop(0, lawnD); gr.addColorStop(0.35, lawn); gr.addColorStop(1, lawn);
         g.fillStyle = gr; g.fillRect(0, sw + 3, lw, lh - sw - 3);
@@ -972,7 +991,20 @@ const RENDER = (function () {
         T.low = cv;
       }
       tileDraw(ctx, T.low, off, ROAD_BOT); tileDraw(ctx, CURB, off, ROAD_BOT - 10);
-      if (okImg(GRASSI)) { GRASSI._lw = GRASSI.width / GRASS.k; GRASSI._lh = GRASSI.height / GRASS.k; tileDraw(ctx, GRASSI, off, H - GRASSI._lh + 6); }
+      const LF = LFI && (ENV === 'citta' ? LFI.metal : LFI.wood);
+      if (okImg(LF)) {
+        /* bordo basso: recinzione con la siepe di Christian e qualche cespuglio davanti */
+        const fk = 92 / LF.height; LF._lw = LF.width * fk; LF._lh = 92; tileDraw(ctx, LF, off, H - LF._lh + 4);
+        const bu = VEGI && VEGI.bush;
+        if (okImg(bu)) {
+          const seg = 9, bh = 62, bw = bu.width * bh / bu.height;
+          for (let i = Math.floor((camX - 12) / seg); i * seg < camX + W / PPM + 12; i++) {
+            if (dhash(i * 5.1 + 0.4) > 0.33) continue;
+            const x = (i * seg + dhash(i + 0.31) * 5 - camX) * PPM, sc = 0.8 + dhash(i + 0.9) * 0.4;
+            ctx.drawImage(bu, Math.round(x - bw * sc / 2), Math.round(H - bh * sc * 0.8), bw * sc, bh * sc);
+          }
+        }
+      } else if (okImg(GRASSI)) { GRASSI._lw = GRASSI.width / GRASS.k; GRASSI._lh = GRASSI.height / GRASS.k; tileDraw(ctx, GRASSI, off, H - GRASSI._lh + 6); }
     }
     else { tileDraw(ctx, T.edgeNear, off, ROAD_BOT - 12); tileDraw(ctx, T.fg, off, ROAD_BOT); }
     const vis = m => m > camX - 8 && m < camX + W / PPM + 8, sx = m => (m - camX) * PPM;
@@ -990,7 +1022,11 @@ const RENDER = (function () {
         for (let yy = y0, row = 0; yy < y1; yy += s, row++) for (let c = 0; c < 4; c++) { ctx.fillStyle = (row + c) % 2 ? '#1e1a26' : '#f2ecde'; ctx.fillRect(sx(fin) + c * s * 0.9, yy, s * 0.9, Math.min(s, y1 - yy)); }
       }
     }
-    for (let m = 50; m < fin; m += 50) if (vis(m)) signBoard(ctx, sx(m), m + ' m');
+    if (DSI && (ENV === 'citta' || T.gok)) {
+      for (let m = 100; m < fin - 20; m += 100) if (vis(m) && DSI['s' + m]) distSign(ctx, sx(m), DSI['s' + m]);
+      if (fin === 402 && vis(fin - 3)) distSign(ctx, sx(fin - 3.2), DSI.s402);
+      if (vis(fin + 10)) distSign(ctx, sx(fin + 10), DSI.arrivo);
+    } else for (let m = 50; m < fin; m += 50) if (vis(m)) signBoard(ctx, sx(m), m + ' m');
     for (let m = -40; m < fin + 700; m += 32) if (vis(m) && !((ENV === 'citta' || T.gok) && Math.abs(m) < 14)) lamp(ctx, sx(m), Math.round(m / 32));
     if (vis(fin)) finishFlag(ctx, sx(fin), fin);
   }
@@ -1042,6 +1078,7 @@ const RENDER = (function () {
     ctx.save(); ctx.clip();
     for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) { ctx.fillStyle = (r + c) % 2 ? INK : '#fff6e8'; ctx.fillRect(x + 4 + c * 9.5, 244 + r * 10, 9.5, 10); }
     ctx.restore(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
+    if (DSI && okImg(DSI.arrivo) && (ENV === 'citta' || T.gok)) return;
     rrect(ctx, x - 62, 340, 124, 30, 5); inked(ctx, '#ff2e7e', 3);
     ctx.fillStyle = '#fff6e8'; ctx.font = fd(900, 18); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(TX('hud.finish', d), x, 356);
   }
@@ -1107,7 +1144,7 @@ const RENDER = (function () {
   /* cerchi intercambiabili delle auto nuove e logo per gli adesivi */
   const RIMS = {}; (typeof CAR_RIMS !== 'undefined' ? CAR_RIMS : []).forEach(r => { RIMS[r.id] = img(r.img); });
   const ZAIMG = typeof ZA_LOGO !== 'undefined' ? img(ZA_LOGO) : null;
-  IND.map(b => b.im).concat(JERSEY ? [JERSEY] : [], RAIL ? [RAIL] : [], BANNERS, FENCE ? [FENCE] : [], CURB ? [CURB] : [], ROADIMG ? [ROADIMG] : [], LIGHTS5 ? [LIGHTS5] : [], GANTRY ? [GANTRY] : [], LAMPS ? [LAMPS.red, LAMPS.green] : [], SLAMPS.map(l => l.im), DECALS, SKYL ? [SKYL] : [], SKYI ? [SKYI.sun].concat(SKYI.clouds) : [], GIMG ? Object.values(GIMG) : [], PROPI, GRASSI ? [GRASSI] : [], SIGNI ? [SIGNI.s100, SIGNI.s200, SIGNI.blank] : [], HFLAG ? HFLAG.f : [], HFIN ? HFIN.f : [], BGL ? [BGL.hills, BGL.village, BGL.factories] : [], BGX, FXS, FXF, FANIMG.flat()).forEach(i => loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()));
+  IND.map(b => b.im).concat(JERSEY ? [JERSEY] : [], RAIL ? [RAIL] : [], BANNERS, FENCE ? [FENCE] : [], CURB ? [CURB] : [], ROADIMG ? [ROADIMG] : [], LIGHTS5 ? [LIGHTS5] : [], GANTRY ? [GANTRY] : [], LAMPS ? [LAMPS.red, LAMPS.green] : [], SLAMPS.map(l => l.im), DECALS, SKYL ? [SKYL] : [], SKYI ? [SKYI.sun].concat(SKYI.clouds) : [], GIMG ? Object.values(GIMG) : [], PROPI, GRASSI ? [GRASSI] : [], SIGNI ? [SIGNI.s100, SIGNI.s200, SIGNI.blank] : [], HFLAG ? HFLAG.f : [], HFIN ? HFIN.f : [], DSI ? Object.values(DSI) : [], VEGI ? Object.values(VEGI) : [], LFI ? Object.values(LFI) : [], BGL ? [BGL.hills, BGL.village, BGL.factories] : [], BGX, FXS, FXF, FANIMG.flat()).forEach(i => loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()));
   const ready = Promise.all(loads);
   const SHAPES = {};
   Object.keys(CARMAP).forEach(id => {
@@ -1355,7 +1392,7 @@ const RENDER = (function () {
       const fi = Math.min(7, Math.floor((1 - o.flame) * 8)), fim = FXF[fi];
       if (fim && fim.complete && fim.width) {
         /* fiammata disegnata da Christian: il beccuccio blu sta sullo scarico */
-        const sz = o.sc * 2.8; c.drawImage(fim, fx - sz * 0.958, fy - sz * 0.524, sz, sz);
+        const sz = o.sc * (o.nitro ? 2.4 : 1.7); c.drawImage(fim, fx - sz * 0.958, fy - sz * 0.524, sz, sz);
       } else {
         const len = o.sc * (0.7 + o.flame * 0.7);
         [['#ff6a1f', 0.14, 1], ['#ffd23f', 0.07, 0.6], ['#ffffff', 0.03, 0.3]].forEach(([col, w, m]) => {
@@ -1553,13 +1590,13 @@ const RENDER = (function () {
     const SPOT = 1.5;
     if (HFLAG) {
       const n = HFLAG.f.length, k = greenT0 == null ? 0 : Math.min(n - 1, Math.floor((now - greenT0) / 1000 * 13));
-      girl(ctx, HFLAG.f[k], SPOT, st.camX, 92, HFLAG.ax);
+      girl(ctx, HFLAG.f[k], SPOT, st.camX, 112, HFLAG.ax);
     }
     /* arrivo */
     if (HFIN && st.dist) {
       const lead = Math.max.apply(null, st.racers.map(r => r.x || 0)), near = lead > st.dist - 70;
       const n = HFIN.f.length, k = near ? Math.floor(now / 1000 * 12) % n : 0;
-      girl(ctx, HFIN.f[k], st.dist + 4, st.camX, 92, HFIN.ax);
+      girl(ctx, HFIN.f[k], st.dist + 4, st.camX, 112, HFIN.ax);
     }
   }
   function frame(ctx, st) {
