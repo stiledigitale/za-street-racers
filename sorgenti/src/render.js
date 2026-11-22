@@ -1455,7 +1455,7 @@ const RENDER = (function () {
     /* posizione */
     skewPanel(c, 1006, 22, 150, 96, 16, '#ffd23f');
     c.fillStyle = INK; c.textAlign = 'center'; c.font = fd(900, 66); c.fillText(st.pos + '°', 1081, 64);
-    c.font = fd(800, 17); c.fillText(TX('hud.of4'), 1076, 104);
+    c.font = fd(800, 17); c.fillText(TX('hud.ofN', st.racers.length), 1076, 104);
 
     /* messaggio grande */
     if (st.msg && st.msg.t > 0) {

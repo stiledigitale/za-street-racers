@@ -394,6 +394,24 @@ td.r, th.r { text-align: right; }
   #scrCareer .tappa .n { font-size: 1.9em; } #scrCareer .tappa .t { font-size: 1.05em; }
   #scrCareer .tappa .d { font-size: 0.75em; }
 }
+
+/* multiplayer online */
+.monline { position: absolute; right: 2cqw; bottom: 23cqh; width: 26cqw; height: 11cqh; flex-direction: column; gap: 0; font-size: 1em; }
+.monline b { font-size: 1.5em; line-height: 1; } .monline span { font-size: 0.75em; font-family: var(--f-b); font-style: normal; font-weight: 700; }
+#scrOnline { padding: 1em 1.6em; overflow: hidden; }
+#scrOnline h2 { font-size: 2em; }
+.onhome { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 1.2em; max-width: 46em; }
+.onbig { font-size: 1.6em; padding: 0.8em 1em; }
+.onjoin { grid-column: 1 / 3; }
+.onjoin input { font-family: var(--f-d); font-weight: 900; font-size: 1.5em; letter-spacing: 0.25em; text-transform: uppercase; width: 7em; padding: 0.3em 0.5em; border: 3px solid var(--ink); border-radius: 0.5em; background: #fff; color: var(--ink); }
+.oncode { font-family: var(--f-d); font-weight: 900; font-size: 1.3em; margin: 0.6em 0; }
+.oncode b { font-size: 1.6em; letter-spacing: 0.2em; color: #ffd84a; }
+.onslots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8em; margin-bottom: 0.9em; }
+.onslot { border: 3px solid var(--ink); border-radius: 0.7em; background: rgba(255,255,255,0.08); padding: 0.5em; text-align: center; min-height: 9em; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2em; }
+.onslot img { width: 4.2em; height: 4.2em; object-fit: cover; object-position: top; border-radius: 0.5em; background: #f8f6ee; border: 2px solid var(--ink); }
+.onslot b { font-family: var(--f-d); font-weight: 900; font-size: 1.05em; } .onslot small { color: var(--muted); font-size: 0.8em; }
+.onslot.me { background: rgba(255,216,74,0.18); } .onslot.empty { opacity: 0.45; }
+.onmsg { margin: 0.5em 0 0; color: #ffd84a; font-weight: 700; min-height: 1.3em; }
 </style>
 </head>
 <body>
@@ -430,6 +448,7 @@ td.r, th.r { text-align: right; }
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
       <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>
     <div class="keys"></div>
+    <button class="gbtn purple monline" data-act="online" type="button"><b data-i18n="menu.online">ONLINE</b><span data-i18n="menu.onlineSub">2-4 piloti veri</span></button>
     <button class="gbtn orange grace mgo" data-act="quick" type="button"><b data-i18n="g.race">GAREGGIA! »</b><span data-i18n="menu.quickSub">Tu contro tre CPU</span></button>
   </section>
 
@@ -495,6 +514,23 @@ td.r, th.r { text-align: right; }
     <div class="tappe" id="tappe"></div>
   </section>
 
+  <section class="screen" id="scrOnline" aria-label="Online">
+    <div class="spread">
+      <div><span class="kicker" data-i18n="menu.online">Online</span><h2 data-i18n="on.title">Sfida altri piloti in diretta</h2><p class="muted" style="margin:0.4em 0 0" data-i18n="on.desc"></p></div>
+      <div class="row"><button class="btn primary" data-act="onExit" type="button" data-i18n="common.menu">Menu</button></div>
+    </div>
+    <div id="onHome" class="onhome">
+      <button class="btn primary onbig" data-act="onQuick" type="button" data-i18n="on.quick">PARTITA VELOCE</button>
+      <button class="btn onbig" data-act="onCreate" type="button" data-i18n="on.create">CREA STANZA</button>
+      <div class="row onjoin"><input id="onCode" maxlength="5" autocomplete="off" spellcheck="false"><button class="btn" data-act="onJoin" type="button" data-i18n="on.join">ENTRA</button></div>
+    </div>
+    <div id="onRoom" class="onroom" hidden>
+      <div class="row oncode"><span data-i18n="on.room">Stanza</span> <b id="onCodeShow"></b><button class="btn" data-act="onInvite" type="button" data-i18n="on.invite">INVITA</button></div>
+      <div class="onslots" id="onSlots"></div>
+      <div class="row"><button class="btn primary" data-act="onGo" id="onGo" type="button" data-i18n="on.go">VIA!</button><button class="btn" data-act="onLeave" type="button" data-i18n="on.leave">ESCI</button></div>
+    </div>
+    <p class="onmsg" id="onMsg"></p>
+  </section>
   <section class="screen" id="scrPilots" aria-label="Piloti">
     <div class="spread">
       <div><span class="kicker" data-i18n="p.kicker">Piloti</span><h2 data-i18n="p.title">Scegli il tuo pilota</h2><p class="muted" style="margin:0.5em 0 0" data-i18n="p.sub">Gli altri nove diventano i tuoi rivali in gara.</p></div>
@@ -551,6 +587,7 @@ td.r, th.r { text-align: right; }
 <script>/*CARS2*/</script>
 <script>/*CARS3*/</script>
 <script>/*SIM*/</script>
+<script>/*NET*/</script>
 <script>/*AUDIO*/</script>
 <script>/*GARDA*/</script>
 <script>/*RENDER*/</script>
