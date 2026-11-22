@@ -878,8 +878,10 @@ const RENDER = (function () {
       const step = 26;
       for (let m = Math.floor(left / step) * step; m < right + step; m += step) {
         const im = BANNERS[((Math.round(m / step) % BANNERS.length) + BANNERS.length) % BANNERS.length];
-        const inZone = zones.some(z => m > z[0] && m < z[1]), h = inZone ? 30 : 34, w = im.width * h / im.height;
-        const x = xs(m), y = inZone ? base - 34 : base - 38;
+        /* grandi: dal marciapiede fino alla rete in alto */
+        const fh = (T.fence && (T.fence._lh || T.fence.height)) || 86, wh = (T.jersey ? T.jersey.height : 40) + (RAIL && RAIL.height ? RAIL.height - 6 : 0);
+        const inZone = zones.some(z => m > z[0] && m < z[1]), h = inZone ? Math.min(54, fh - 10) : Math.max(46, wh - 4), w = im.width * h / im.height;
+        const x = xs(m), y = base - h - 3;
         if (x + w < 0 || x - w > W) continue;
         if (P.night) { ctx.save(); ctx.globalAlpha = 0.78; }
         ctx.drawImage(im, x - w / 2, y, w, h);
