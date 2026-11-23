@@ -3214,8 +3214,8 @@ const RENDER = (function () {
         };
         const h0 = Hh * 0.8, w0 = Math.min((split - sp.rear) * 0.88, h0 * 2.1);
         /* inclinata come sul furgone: ruotata e in corsivo, un po' più grande, tagliata dai bordi della carrozzeria */
-        { const lx = sp.rear + (split - sp.rear) / 2 + 4, ly = B + Hh * 0.43, ww = w0 * 1.12, hh = h0 * 1.12;
-          c.save(); c.translate(lx, ly); c.rotate(-0.2); c.transform(1, 0, -0.32, 1, 0, 0);
+        { const lx = sp.rear + (split - sp.rear) / 2 + 4, ly = B + Hh * 0.43, ww = w0 * 0.95, hh = h0 * 0.95;
+          c.save(); c.translate(lx, ly); c.rotate(0.26); c.transform(1, 0, -0.12, 1, 0, 0);
           logo(-ww / 2, -hh / 2, ww, Math.max(2.5, hh * 0.042), hh); c.restore(); }
         /* logo piccolo e scritta sulla porta bianca */
         const dw = Hh * 0.36, dx = split + (wf.x - wf.r * 1.1 - split) * 0.5 - dw / 2;
