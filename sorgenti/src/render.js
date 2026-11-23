@@ -1462,6 +1462,14 @@ const RENDER = (function () {
       const src = sp.v2 ? (rs && rs.complete ? rs : wh.im) : wheelFor(sp, i, o.look);
       const s = sp.v2 ? Math.round(wh.r * 2 * k) : Math.round(wh.im.width * k * rimK);
       const cx = x0 + wh.x * k, cy = y0 + (wh.y - drop) * k, wi = scaled(src, s, s);
+      if (sp.v2) {
+        /* fondo scuro dietro al cerchio e dentro al passaruota: tra le razze non si vede più la strada */
+        const R = s / 2;
+        c.save(); c.beginPath(); c.rect(cx - R * 1.2, cy - R * 1.2, R * 2.4, R * 1.2 + R * 0.55); c.clip();
+        const gw = c.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.1); gw.addColorStop(0, '#2a2a30'); gw.addColorStop(0.6, '#121216'); gw.addColorStop(1, '#060608');
+        c.fillStyle = gw; c.beginPath(); c.arc(cx, cy, R * 1.1, 0, TAU); c.fill(); c.restore();
+        c.fillStyle = '#0a0a0d'; c.beginPath(); c.arc(cx, cy, R * 0.9, 0, TAU); c.fill();
+      }
       const one = (a, alpha) => { c.save(); c.globalAlpha = alpha; c.translate(cx, cy); c.rotate(a); c.drawImage(wi, -s / 2, -s / 2, s, s); c.restore(); };
       one(ang, 1);
       if (blur > 0.3) { one(ang + 0.21, blur * 0.45); one(ang + 0.42, blur * 0.3); }
