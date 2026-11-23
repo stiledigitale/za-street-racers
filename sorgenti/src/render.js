@@ -706,6 +706,7 @@ const RENDER = (function () {
   const GRASSI = typeof GRASS !== 'undefined' ? mkImg(GRASS.img) : null;
   const SIGNI = typeof SIGNS !== 'undefined' ? { s100: mkImg(SIGNS.s100), s200: mkImg(SIGNS.s200), blank: mkImg(SIGNS.blank) } : null;
   const okImg = i => i && i.complete && i.width;
+  const ZAL = typeof ZA_DOOR_LOGO !== 'undefined' ? mkImg(ZA_DOOR_LOGO) : null;
   const NUI = typeof NITRO_UI !== 'undefined' ? { bottle: mkImg(NITRO_UI.bottle), frame: mkImg(NITRO_UI.frame), fill: mkImg(NITRO_UI.fill) } : null;
   /* cartelli delle distanze, vegetazione e recinzioni basse di Christian */
   const DSI = typeof DIST_SIGNS !== 'undefined' ? Object.fromEntries(Object.entries(DIST_SIGNS).filter(([k]) => k !== 'k').map(([k, u]) => [k, mkImg(u)])) : null;
@@ -1277,14 +1278,14 @@ const RENDER = (function () {
         };
         const h0 = Hh * 0.8, w0 = Math.min((split - sp.rear) * 0.88, h0 * 2.1);
         /* inclinata come sul furgone: ruotata e in corsivo, un po' più grande, tagliata dai bordi della carrozzeria */
-        { const lx = sp.rear + (split - sp.rear) / 2 + 4, ly = B + Hh * 0.24, ww = w0 * 0.95, hh = h0 * 0.95;
+        { const lx = sp.rear + (split - sp.rear) / 2 + 4, ly = B + Hh * 0.06, ww = w0 * 0.95, hh = h0 * 0.95;
           c.save(); c.translate(lx, ly); c.rotate(0.26); c.transform(1, 0, -0.12, 1, 0, 0);
           logo(-ww / 2, -hh / 2, ww, Math.max(2.5, hh * 0.042), hh); c.restore(); }
         /* logo piccolo e scritta sulla porta bianca */
-        const dw = Hh * 0.36, dx = split + (wf.x - wf.r * 1.1 - split) * 0.5 - dw / 2;
-        logo(dx, B + Hh * 0.12, dw, 2);
+        const dw = Hh * 0.46, dx = split + (wf.x - wf.r * 1.1 - split) * 0.5 - dw / 2;
+        if (okImg(ZAL)) { c.drawImage(ZAL, dx, B + Hh * 0.26, dw, dw * ZAL.height / ZAL.width); c.drawImage(ZAL, dx, B + Hh * 0.26, dw, dw * ZAL.height / ZAL.width); } else logo(dx, B + Hh * 0.12, dw, 2);
         c.fillStyle = '#2a2a30'; c.font = fd(900, Hh * 0.1); c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText('TEAM ZA', dx + dw / 2, B + Hh * 0.47, dw * 1.6);
+        c.fillText('TEAM ZA', dx + dw / 2, B + Hh * (okImg(ZAL) ? 0.66 : 0.5), dw * 1.4);
         /* fascia gialla e nera sotto le porte */
         const sx0 = wr.x + wr.r * 1.15, sx1 = wf.x - wf.r * 1.15, sy = pa.sill - Hh * 0.13, shh = Hh * 0.065;
         c.save(); c.beginPath(); c.rect(sx0, sy, sx1 - sx0, shh); c.clip();
@@ -1397,7 +1398,7 @@ const RENDER = (function () {
     }
     c.drawImage(pa.rest, 0, 0);
     const keys = Object.keys(sp._looks); if (keys.length > 6) delete sp._looks[keys[0]];
-    sp._looks[key] = cv;
+    if (look.livery !== 'teamza' || okImg(ZAL)) sp._looks[key] = cv;
     return cv;
   }
   function wheelFor(sp, i, look) {
