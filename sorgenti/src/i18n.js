@@ -94,6 +94,7 @@ const I18N = {
   'skin.scacchi': ["Scacchi", "Checkers", "Karos", "Cuadros", "Damier"],
   'skin.duetoni': ["Due toni", "Two-tone", "Zweifarbig", "Bicolor", "Bicolore"],
   'skin.fiamme': ["Fiamme", "Flames", "Flammen", "Llamas", "Flammes"],
+  'skin.teamza': ["Team ZA", "Team ZA", "Team ZA", "Team ZA", "Team ZA"],
   'skin.mimetica': ["Mimetica", "Camo", "Tarnmuster", "Camuflaje", "Camouflage"],
   'st.numero': ["Numero", "Number", "Nummer", "Número", "Numéro"],
   'st.za': ["Logo ZA", "ZA logo", "ZA-Logo", "Logo ZA", "Logo ZA"],

@@ -742,7 +742,7 @@
   const ACCENTS = ['#ffffff', '#14111c', '#ffd23f', '#ff2e7e', '#19c3d1', '#3cf07a', '#ff6a1f', '#8a3cf0', '#e8262a', '#1f5fd6'];
   const RIMC = ['#c9ccd3', '#2a2830', '#d9a441', '#ffffff', '#ff2e7e', '#b6ff1f', '#1f6fff', '#ff8a1f', '#e8262a', '#8a3cf0'];
   const LIVERIES = [['orig', 'Originale'], ['nessuna', 'Nessuna'], ['strisce', 'Strisce'], ['graffi', 'Graffi'], ['scacchi', 'Scacchi'], ['duetoni', 'Due toni'], ['fiamme', 'Fiamme'], ['numero', 'Numero'], ['za', 'ZA Racing']];
-  const SKINS = ['nessuna', 'strisce', 'graffi', 'scacchi', 'duetoni', 'fiamme', 'mimetica'].map(k => [k]);
+  const SKINS = ['nessuna', 'teamza', 'strisce', 'graffi', 'scacchi', 'duetoni', 'fiamme', 'mimetica'].map(k => [k]);
   const STICKERS = ['numero', 'za', 'zaracing', 'sponsor', 'tricolore', 'scacchi'].map(k => [k]);
   const pick = a => a[(Math.random() * a.length) | 0];
   function randomLook() {

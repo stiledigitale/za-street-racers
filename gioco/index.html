@@ -718,6 +718,7 @@ const I18N = {
   'skin.scacchi': ["Scacchi", "Checkers", "Karos", "Cuadros", "Damier"],
   'skin.duetoni': ["Due toni", "Two-tone", "Zweifarbig", "Bicolor", "Bicolore"],
   'skin.fiamme': ["Fiamme", "Flames", "Flammen", "Llamas", "Flammes"],
+  'skin.teamza': ["Team ZA", "Team ZA", "Team ZA", "Team ZA", "Team ZA"],
   'skin.mimetica': ["Mimetica", "Camo", "Tarnmuster", "Camuflaje", "Camouflage"],
   'st.numero': ["Numero", "Number", "Nummer", "Número", "Numéro"],
   'st.za': ["Logo ZA", "ZA logo", "ZA-Logo", "Logo ZA", "Logo ZA"],
@@ -3198,6 +3199,34 @@ const RENDER = (function () {
         c.fillText(String(look.num || 7), x, y + r * 0.05);
         break;
       }
+      case 'teamza': {
+        /* skin TEAM ZA dal furgone di ZA Trasporti e Scavi: davanti bianco, dietro nero con la grande ZA gialla a contorno,
+           fascia gialla e nera sotto le porte, piccolo logo sulla porta */
+        const Y = '#ffc21a', BLK = '#17171b', split = pa.door - L * 0.15;
+        c.fillStyle = '#f4f4f2'; c.fillRect(split, -10, sp.front - split + 20, sp.h + 20);
+        c.fillStyle = BLK; c.fillRect(sp.rear - 20, -10, split - sp.rear + 20, sp.h + 20);
+        const logo = (x, y, w, lw, hh) => {
+          const h = hh || w * 0.62, P = pts => { c.beginPath(); pts.forEach(([u, v], i) => i ? c.lineTo(x + u * w, y + v * h) : c.moveTo(x + u * w, y + v * h)); c.closePath(); c.stroke(); };
+          c.strokeStyle = Y; c.lineWidth = lw; c.lineJoin = 'miter';
+          P([[0.04, 0], [0.56, 0], [0.56, 0.14], [0.2, 0.84], [0.5, 0.84], [0.5, 1], [0, 1], [0, 0.86], [0.36, 0.16], [0.04, 0.16]]);
+          P([[0.36, 1], [0.66, 0.12], [1, 1], [0.84, 1], [0.66, 0.5], [0.52, 1]]);
+          P([[0.6, 0.86], [0.66, 0.7], [0.72, 0.86]]);
+        };
+        const h0 = Hh * 0.8, w0 = Math.min((split - sp.rear) * 0.88, h0 * 2.1);
+        logo(sp.rear + (split - sp.rear - w0) / 2 + 6, B + Hh * 0.03, w0, Math.max(2.5, h0 * 0.045), h0);
+        /* logo piccolo e scritta sulla porta bianca */
+        const dw = Hh * 0.36, dx = split + (wf.x - wf.r * 1.1 - split) * 0.5 - dw / 2;
+        logo(dx, B + Hh * 0.12, dw, 2);
+        c.fillStyle = '#2a2a30'; c.font = fd(900, Hh * 0.1); c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('TEAM ZA', dx + dw / 2, B + Hh * 0.47, dw * 1.6);
+        /* fascia gialla e nera sotto le porte */
+        const sx0 = wr.x + wr.r * 1.15, sx1 = wf.x - wf.r * 1.15, sy = pa.sill - Hh * 0.13, shh = Hh * 0.065;
+        c.save(); c.beginPath(); c.rect(sx0, sy, sx1 - sx0, shh); c.clip();
+        c.fillStyle = BLK; c.fillRect(sx0, sy, sx1 - sx0, shh); c.fillStyle = Y;
+        for (let x = sx0 - shh; x < sx1 + shh; x += shh * 1.6) { c.beginPath(); c.moveTo(x, sy + shh); c.lineTo(x + shh * 0.8, sy + shh); c.lineTo(x + shh * 1.6, sy); c.lineTo(x + shh * 0.8, sy); c.closePath(); c.fill(); }
+        c.restore();
+        break;
+      }
       case 'za': {
         const x = (wr.x + wf.x) / 2 + (wf.x - wr.x) * 0.06, y = B + Hh * 0.4;
         c.font = fd(900, Hh * 0.24); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 3;
@@ -4368,7 +4397,7 @@ const RENDER = (function () {
   const ACCENTS = ['#ffffff', '#14111c', '#ffd23f', '#ff2e7e', '#19c3d1', '#3cf07a', '#ff6a1f', '#8a3cf0', '#e8262a', '#1f5fd6'];
   const RIMC = ['#c9ccd3', '#2a2830', '#d9a441', '#ffffff', '#ff2e7e', '#b6ff1f', '#1f6fff', '#ff8a1f', '#e8262a', '#8a3cf0'];
   const LIVERIES = [['orig', 'Originale'], ['nessuna', 'Nessuna'], ['strisce', 'Strisce'], ['graffi', 'Graffi'], ['scacchi', 'Scacchi'], ['duetoni', 'Due toni'], ['fiamme', 'Fiamme'], ['numero', 'Numero'], ['za', 'ZA Racing']];
-  const SKINS = ['nessuna', 'strisce', 'graffi', 'scacchi', 'duetoni', 'fiamme', 'mimetica'].map(k => [k]);
+  const SKINS = ['nessuna', 'teamza', 'strisce', 'graffi', 'scacchi', 'duetoni', 'fiamme', 'mimetica'].map(k => [k]);
   const STICKERS = ['numero', 'za', 'zaracing', 'sponsor', 'tricolore', 'scacchi'].map(k => [k]);
   const pick = a => a[(Math.random() * a.length) | 0];
   function randomLook() {
