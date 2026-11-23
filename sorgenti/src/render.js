@@ -1282,10 +1282,10 @@ const RENDER = (function () {
           c.save(); c.beginPath(); c.rect(sp.rear - 20, -10, split - sp.rear + 20, sp.h + 20); c.clip(); c.translate(lx, ly); c.rotate(0.26); c.transform(1, 0, -0.12, 1, 0, 0);
           logo(-ww / 2, -hh / 2, ww, Math.max(2.5, hh * 0.042), hh); c.restore(); }
         /* logo piccolo e scritta sulla porta bianca */
-        const dw = Hh * 0.46, dx = split + (wf.x - wf.r * 1.1 - split) * 0.5 - dw / 2;
-        if (okImg(ZAL)) { c.drawImage(ZAL, dx, B + Hh * 0.26, dw, dw * ZAL.height / ZAL.width); c.drawImage(ZAL, dx, B + Hh * 0.26, dw, dw * ZAL.height / ZAL.width); } else logo(dx, B + Hh * 0.12, dw, 2);
-        c.fillStyle = '#2a2a30'; c.font = fd(900, Hh * 0.1); c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText('TEAM ZA', dx + dw / 2, B + Hh * (okImg(ZAL) ? 0.66 : 0.5), dw * 1.4);
+        const dw = Hh * 0.6, dx = split + (wf.x - wf.r * 1.1 - split) * 0.5 - dw / 2;
+        if (okImg(ZAL)) { c.drawImage(ZAL, dx, B + Hh * 0.06, dw, dw * ZAL.height / ZAL.width); c.drawImage(ZAL, dx, B + Hh * 0.06, dw, dw * ZAL.height / ZAL.width); } else logo(dx, B + Hh * 0.12, dw, 2);
+        c.fillStyle = '#2a2a30'; c.font = fd(900, Hh * 0.12); c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('TEAM ZA', dx + dw / 2, B + Hh * (okImg(ZAL) ? 0.52 : 0.5), dw * 1.2);
         /* fascia gialla e nera sotto le porte */
         const sx0 = wr.x + wr.r * 1.15, sx1 = wf.x - wf.r * 1.15, sy = pa.sill - Hh * 0.13, shh = Hh * 0.065;
         c.save(); c.beginPath(); c.rect(sx0, sy, sx1 - sx0, shh); c.clip();
