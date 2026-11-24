@@ -223,7 +223,7 @@
     const wantTrack = od ? od.track : mode === 'career' ? (TAPPE[G.tappa - 1].track || 'citta') : save.track;
     scene(wantTrack, wantLight); G.lightTrack = wantTrack;
     if (!od) G.setup = reuse && G.setup ? G.setup : makeSetup();
-    const b = od ? buildOnlineRacers(G.cfg, od) : buildRacers(G.cfg, G.setup);
+    const b = od ? buildOnlineRacers(G.cfg, od) : buildRacers(G.cfg, mode === 'solo' ? { cpus: [] } : G.setup);
     G.racers = b.list; G.player = b.p; G.dist = G.cfg.dist;
     G.racers.forEach(r => { if (r.ai) SIM.aiPrepare(r, G.cfg, Math.random); });
     G.lz = SIM.launchZone(G.player.car, G.cfg); G.sz = SIM.shiftZone(G.player.car, G.cfg);
@@ -615,7 +615,7 @@
   /* a fine gara il tempo va in classifica (gara veloce e online, sulla distanza della pista) */
   function sendTime(p) {
     const track = G.lightTrack, dist = G.dist;
-    if (!p.finished || (G.mode !== 'quick' && G.mode !== 'online') || !((track === 'citta' && dist === 402) || (track === 'garda' && dist === 804))) return;
+    if (!p.finished || (G.mode !== 'quick' && G.mode !== 'online' && G.mode !== 'solo') || !((track === 'citta' && dist === 402) || (track === 'garda' && dist === 804))) return;
     const row = { name: pilotName(save.pilot).slice(0, 14) || 'Pilota', pilot: save.pilot | 0, car: save.car, track: track, dist: dist, time: +p.finishTime.toFixed(3), cls: SIM.modClass(save.cars[save.car].mods), online: G.mode === 'online', ver: 'web' };
     NET.submitTime(row).then(() => NET.rankOf(track, row.time)).then(pos => {
       if (G.phase === 'results') { const el = document.createElement('div'); el.className = 'lbres'; el.textContent = T('lb.pos', pos); el.style.cssText = 'margin-top:0.3em;color:#9fd8ff;font-weight:800'; $('rSub').after(el); }
@@ -629,6 +629,53 @@
       ch.track({ id: NET.myId, at: Date.now() });
     } catch (e) { }
   }
+
+  /* ---------- immagine da condividere: copertina, miglior tempo e nickname ---------- */
+  const COVER = new Image(); COVER.src = COVER_ART;
+  async function shareTime() {
+    const track = G.lightTrack || save.track, dist = G.dist || 402, t = (save.soloBest || {})[track + '_' + dist]; if (!t) return;
+    const nick = pilotName(save.pilot) || 'Pilota', tname = T('track.' + track), url = 'https://za-street-racers.pages.dev';
+    const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 900; const c = cv.getContext('2d');
+    if (COVER.complete && COVER.width) c.drawImage(COVER, 0, 0, 1600, 900);
+    const fd = (getComputedStyle(document.documentElement).getPropertyValue('--f-d') || 'sans-serif').trim();
+    /* riquadro del tempo al posto del pulsante GIOCA */
+    const x = 28, y = 455, w = 640, h = 415;
+    c.save(); c.shadowColor = 'rgba(0,0,0,0.5)'; c.shadowBlur = 30; c.fillStyle = 'rgba(20,14,34,0.88)';
+    c.beginPath(); c.roundRect(x, y, w, h, 34); c.fill(); c.restore();
+    c.lineWidth = 8; c.strokeStyle = '#ffd23f'; c.beginPath(); c.roundRect(x, y, w, h, 34); c.stroke();
+    c.textAlign = 'center'; c.textBaseline = 'alphabetic'; const cx = x + w / 2;
+    c.fillStyle = '#ffd23f'; c.font = 'italic 900 50px ' + fd; c.fillText(T('share.best'), cx, y + 78);
+    c.fillStyle = '#fff'; c.font = 'italic 900 150px ' + fd; c.lineWidth = 12; c.strokeStyle = '#14111c'; c.strokeText(t.toFixed(3) + ' s', cx, y + 225); c.fillText(t.toFixed(3) + ' s', cx, y + 225);
+    c.fillStyle = '#ff4fa0'; c.font = 'italic 900 64px ' + fd; c.strokeText(nick.toUpperCase(), cx, y + 305, w - 60); c.fillText(nick.toUpperCase(), cx, y + 305, w - 60);
+    c.fillStyle = '#cfe9ff'; c.font = '800 34px ' + fd; c.fillText(tname.toUpperCase() + ' · ' + dist + ' m', cx, y + 355);
+    c.fillStyle = '#ffd23f'; c.font = '700 26px ' + fd; c.fillText(url.replace('https://', ''), cx, y + 395);
+    const text = T('share.text', t.toFixed(3), dist, tname) + ' ' + url;
+    const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.9)); if (!blob) return;
+    const file = new File([blob], 'za-street-racers-' + t.toFixed(3) + '.jpg', { type: 'image/jpeg' });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'ZA Street Racers', text: text }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    try { navigator.clipboard && navigator.clipboard.writeText(text); } catch (e) { }
+    const el = document.createElement('div'); el.className = 'lbres'; el.textContent = T('share.saved'); el.style.cssText = 'margin-top:0.3em;color:#9fd8ff;font-weight:800'; $('rSub').after(el);
+  }
+
+  /* ---------- copertina iniziale con finta barra di caricamento ---------- */
+  (function splash() {
+    const sp = $('splash'); if (!sp) return;
+    if (navigator.webdriver && !/splash=1/.test(location.search)) { sp.remove(); return; }
+    $('splashImg').src = COVER_ART;
+    let v = 0; const tick = setInterval(() => {
+      v = Math.min(100, v + 3 + Math.random() * 9); $('spFill').style.width = v + '%';
+      if (v >= 100) { clearInterval(tick); sp.classList.add('ready'); }
+    }, 110);
+    sp.addEventListener('click', () => {
+      if (!sp.classList.contains('ready')) return;
+      AUDIO.init(); AUDIO.setEnabled(save.audio.on); AUDIO.fx('click');
+      if (touchSeen) goFull();
+      sp.classList.add('out'); setTimeout(() => sp.remove(), 450);
+    });
+  })();
 
   /* ---------- schermate ---------- */
   const SCREENS = ['scrLb', 'scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
@@ -655,6 +702,8 @@
     AUDIO.init(); AUDIO.setEnabled(save.audio.on); AUDIO.fx('click');
     const a = b.dataset.act;
     if (a === 'quick') startRace('quick', 1);
+    else if (a === 'solo') startRace('solo', 1);
+    else if (a === 'share') shareTime();
     else if (a === 'career') { G.phase = 'menu'; renderCareer(); showScreen('scrCareer'); }
     else if (a === 'garage') { G.phase = 'menu'; renderGarage(true); showScreen('scrGarage'); }
     else if (a === 'rules') { renderRules(); showScreen('scrRules'); }
@@ -1036,7 +1085,8 @@
     const fin = G.racers.filter(r => r.finished).sort((a, b) => a.finishTime - b.finishTime), dnf = G.racers.filter(r => !r.finished);
     const order = fin.concat(dnf), pos = p.finished ? order.indexOf(p) + 1 : 0;
     const perf = p.shifts.filter(s => s.q === 'perfetta').length;
-    const earn = pos ? reward(pos, G.mode === 'career' ? G.tappa : 1) + perf * 20 : 0;
+    const solo = G.mode === 'solo';
+    const earn = pos ? (solo ? 0 : reward(pos, G.mode === 'career' ? G.tappa : 1)) + perf * 20 : 0;
     if (G.mode === 'online') { ON.inRace = false; onTrack(); }
     document.querySelectorAll('.lbres').forEach(e => e.remove()); sendTime(p);
     save.credits += earn;
@@ -1050,8 +1100,10 @@
         if (pos === 1) { save.career.won[G.tappa] = true; save.career.unlocked = Math.max(save.career.unlocked, Math.min(6, G.tappa + 1)); }
       }
     }
+    let soloNew = false;
+    if (solo && p.finished) { save.soloBest = save.soloBest || {}; const sk = G.lightTrack + '_' + G.dist; if (!save.soloBest[sk] || p.finishTime < save.soloBest[sk]) { save.soloBest[sk] = p.finishTime; soloNew = true; } }
     persist();
-    $('rKicker').textContent = G.mode === 'online' ? T('on.res', G.dist) : G.mode === 'career' ? T('res.career', G.tappa, T('tappa.' + G.tappa)) : T('res.single', save.track === 'garda' ? T('track.garda') + ' · ' : '', G.dist);
+    $('rKicker').textContent = solo ? T('res.solo', G.lightTrack === 'garda' ? T('track.garda') + ' · ' : '', G.dist) : G.mode === 'online' ? T('on.res', G.dist) : G.mode === 'career' ? T('res.career', G.tappa, T('tappa.' + G.tappa)) : T('res.single', save.track === 'garda' ? T('track.garda') + ' · ' : '', G.dist);
     $('rAv').src = PILOTS[save.pilot];
     if (PILOT_ANIM[save.pilot]) $('rAv').dataset.anim = save.pilot; else delete $('rAv').dataset.anim;
     $('rTitle').textContent = !pos ? T('res.blown') : T('res.pos', pos, LANG === 'fr' ? (pos === 1 ? 're' : 'e') : ['st', 'nd', 'rd', 'th'][Math.min(3, pos - 1)]);
@@ -1061,6 +1113,12 @@
       pos === 1 ? (fin[1] ? T('res.ahead', (fin[1].finishTime - p.finishTime).toFixed(3)) : '') + (record ? T('res.record') : '') :
         T('res.behind', (p.finishTime - winT).toFixed(3)) + (record ? T('res.record') : '');
     $('rTable').innerHTML = order.map((r, i) => '<tr class="' + (r === p ? 'me' : '') + '"><td class="p">' + (r.finished ? i + 1 : '–') + '</td><td><i class="av" style="--ring:' + r.paint + ';background-image:url(' + PILOTS[r.pilot] + ')"></i>' + r.name + '</td><td class="muted">' + carName(r.car) + '</td><td class="r">' + (r.finished ? r.finishTime.toFixed(3) + ' s' : T('res.dnf')) + '</td><td class="r">' + (r.finished ? Math.round(r.trap * 3.6) + ' km/h' : '') + '</td></tr>').join('');
+    if (solo) {
+      $('rTitle').textContent = p.finished ? p.finishTime.toFixed(3) + ' s' : T('res.blown');
+      $('rTitle').style.color = soloNew ? 'var(--go)' : p.finished ? 'var(--paper)' : 'var(--stop)';
+      const sb = (save.soloBest || {})[G.lightTrack + '_' + G.dist];
+      $('rSub').textContent = !p.finished ? T('res.blownSub') : soloNew ? T('res.soloNew') : T('res.soloBest', sb.toFixed(3));
+    }
     const best = p.shifts.slice().sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
     const QD = { perfetta: '#6fe08a', buona: '#f2d36b', anticipata: '#7fc4f0', tardiva: '#ffa25a', fuorigiri: '#ff6a55', lenta: '#7fc4f0', eccessiva: '#ffa25a' };
     const chips = p.shifts.map(s => '<span class="chip" style="color:' + QD[s.q] + '">' + s.gear + '→' + (s.gear + 1) + ' ' + QL(s.q).toLowerCase() + '</span>').join('');
@@ -1074,6 +1132,7 @@
     let act = G.mode === 'online' ? '<button class="btn primary" data-act="onBack" type="button">' + T('on.back') + '</button>' : '<button class="btn primary" data-act="rematch" type="button">' + T('res.rematch') + '</button>';
     if (G.mode === 'career' && pos === 1 && G.tappa < 6) act = '<button class="btn primary" data-act="next" type="button">' + T('res.next', G.tappa + 1) + '</button><button class="btn" data-act="rematch" type="button">' + T('res.rematch2') + '</button>';
     if (G.mode === 'career' && pos === 1 && G.tappa === 6) $('rSub').textContent += T('res.done');
+    if (solo && (save.soloBest || {})[G.lightTrack + '_' + G.dist]) act += '<button class="btn primary" data-act="share" type="button">📤 ' + T('share.btn') + '</button>';
     if (G.mode !== 'online') act += '<button class="btn" data-act="garage" type="button">' + T('menu.garage') + '</button>' + (G.mode === 'career' ? '<button class="btn" data-act="career" type="button">' + T('res.rounds') + '</button>' : '') + '<button class="btn ghost" data-act="menu" type="button">' + T('common.menu') + '</button>';
     $('rActions').innerHTML = act;
     showScreen('scrResults');

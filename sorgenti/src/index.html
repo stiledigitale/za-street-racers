@@ -7,6 +7,16 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>ZA Street Racers</title>
+<meta name="description" content="Una strada, un quarto di miglio, il tempo dipende da te! Drag racing arcade gratis nel browser, su telefono e PC.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://za-street-racers.pages.dev/">
+<meta property="og:title" content="ZA Street Racers">
+<meta property="og:description" content="Una strada, un quarto di miglio, il tempo dipende da te! Gioca gratis nel browser.">
+<meta property="og:image" content="https://za-street-racers.pages.dev/share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://za-street-racers.pages.dev/share.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Barlow:wght@500;600;700&display=swap" rel="stylesheet">
@@ -412,6 +422,18 @@ td.r, th.r { text-align: right; }
   #scrCareer .tappa .d { font-size: 0.75em; }
 }
 
+/* copertina iniziale con barra di caricamento */
+#splash { position: absolute; inset: 0; z-index: 80; background: #1a0f2a; cursor: pointer; }
+#splash img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#splash .spbar { position: absolute; left: 3cqw; width: 29cqw; bottom: 5.5cqh; height: 2.6cqh; border: 0.35cqh solid #14111c; border-radius: 2cqh; background: rgba(20,17,28,0.75); overflow: hidden; box-shadow: 0 0.4cqh 0 #14111c; }
+#splash .spbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffd23f, #ff2e7e); transition: width 0.12s linear; }
+#splash .sptap { position: absolute; left: 3cqw; width: 29cqw; bottom: 9.5cqh; text-align: center; font: 900 italic 3.2cqh var(--f-d); color: #fff; text-shadow: 0 0.3cqh 0 #14111c, 0 0 1cqh #ff2e7e; opacity: 0; transition: opacity 0.3s; }
+#splash.ready .sptap { opacity: 1; animation: spPulse 1s ease-in-out infinite; }
+#splash.ready .spbar { opacity: 0.0; transition: opacity 0.4s; }
+#splash.out { opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+@keyframes spPulse { 50% { transform: scale(1.06); } }
+.msolo { position: absolute; right: 2cqw; bottom: 35.5cqh; width: 26cqw; height: 10cqh; flex-direction: column; gap: 0; font-size: 1em; }
+.msolo b { font-size: 1.35em; line-height: 1; } .msolo span { font-size: 0.72em; font-family: var(--f-b); font-style: normal; font-weight: 700; }
 /* classifica online e contatore */
 #scrLb { padding: 1em 1.6em; overflow: hidden; }
 #scrLb h2 { font-size: 1.6em; }
@@ -455,6 +477,7 @@ td.r, th.r { text-align: right; }
   </div>
   <button class="gbtn dark mfull" id="btnFull" type="button" aria-label="Schermo intero">⛶</button>
   <div id="netCount" hidden></div>
+  <div id="splash"><img id="splashImg" alt="ZA Street Racers"><div class="spbar"><i id="spFill"></i></div><div class="sptap" id="spTap" data-i18n="splash.tap">TOCCA PER GIOCARE</div></div>
   <div id="corner">
     <button id="btnPause" class="imgbtn" type="button" aria-label="Pausa" data-i18n-aria="btn.pause"><img alt="" id="imgPause"></button>
     <button id="btnSound" type="button" data-i18n="audio.on">AUDIO ON</button>
@@ -481,6 +504,7 @@ td.r, th.r { text-align: right; }
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
       <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>
     <div class="keys"></div>
+    <button class="gbtn blue msolo" data-act="solo" type="button"><b data-i18n="menu.solo">A CRONOMETRO</b><span data-i18n="menu.soloSub">Solo tu e il tempo</span></button>
     <button class="gbtn purple monline" data-act="online" type="button"><b data-i18n="menu.online">ONLINE</b><span data-i18n="menu.onlineSub">2-4 piloti veri</span></button>
     <button class="gbtn orange grace mgo" data-act="quick" type="button"><b data-i18n="g.race">GAREGGIA! »</b><span data-i18n="menu.quickSub">Tu contro tre CPU</span></button>
   </section>

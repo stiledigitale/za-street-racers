@@ -123,6 +123,17 @@ const I18N = {
   'rim.k19': ["Grafite razze a Y", "Graphite Y-spoke", "Graphit Y-Speichen", "Grafito radios en Y", "Graphite branches en Y"],
   'rim.k20': ["Argento stella", "Silver star", "Silber Stern", "Plata estrella", "Argent étoile"],
 
+  /* modalità a cronometro, condivisione, copertina */
+  'menu.solo': ["A CRONOMETRO", "TIME ATTACK", "ZEITFAHREN", "CONTRARRELOJ", "CONTRE-LA-MONTRE"],
+  'menu.soloSub': ["Solo tu e il tempo", "Just you and the clock", "Nur du und die Uhr", "Solo tú y el reloj", "Toi et le chrono"],
+  'res.solo': ["A cronometro · {0}{1} m", "Time attack · {0}{1} m", "Zeitfahren · {0}{1} m", "Contrarreloj · {0}{1} m", "Contre-la-montre · {0}{1} m"],
+  'res.soloNew': ["NUOVO RECORD PERSONALE!", "NEW PERSONAL BEST!", "NEUE BESTZEIT!", "¡NUEVO RÉCORD PERSONAL!", "NOUVEAU RECORD PERSO !"],
+  'res.soloBest': ["Il tuo record: {0} s", "Your best: {0} s", "Deine Bestzeit: {0} s", "Tu récord: {0} s", "Ton record : {0} s"],
+  'share.btn': ["CONDIVIDI IL TEMPO", "SHARE YOUR TIME", "ZEIT TEILEN", "COMPARTIR TIEMPO", "PARTAGER LE TEMPS"],
+  'share.best': ["MIGLIOR TEMPO", "BEST TIME", "BESTZEIT", "MEJOR TIEMPO", "MEILLEUR TEMPS"],
+  'share.text': ["Ho fatto {0} s sui {1} m di {2} in ZA Street Racers! Riesci a battermi?", "I did {0} s on the {1} m at {2} in ZA Street Racers! Can you beat me?", "Ich habe {0} s auf {1} m bei {2} in ZA Street Racers geschafft! Schaffst du mehr?", "¡Hice {0} s en los {1} m de {2} en ZA Street Racers! ¿Me ganas?", "J'ai fait {0} s sur {1} m à {2} dans ZA Street Racers ! Tu me bats ?"],
+  'share.saved': ["Immagine salvata: pubblicala dove vuoi!", "Image saved: post it anywhere!", "Bild gespeichert: poste es, wo du willst!", "Imagen guardada: ¡publícala donde quieras!", "Image enregistrée : publie-la où tu veux !"],
+  'splash.tap': ["TOCCA PER GIOCARE", "TAP TO PLAY", "TIPPEN ZUM SPIELEN", "TOCA PARA JUGAR", "TOUCHE POUR JOUER"],
   /* multiplayer online */
   'lb.title': ["Classifica online", "Online leaderboard", "Online-Rangliste", "Clasificación online", "Classement en ligne"],
   'lb.sub': ["Il miglior tempo di ogni pilota, gare veloci e online", "Each driver's best time, quick and online races", "Bestzeit jedes Fahrers, schnelle und Online-Rennen", "El mejor tiempo de cada piloto, carreras rápidas y online", "Le meilleur temps de chaque pilote, courses rapides et en ligne"],
