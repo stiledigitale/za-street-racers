@@ -202,7 +202,7 @@ const I18N = {
   'mod.turbo': ["Turbo", "Turbo", "Turbo", "Turbo", "Turbo"],
   'mod.turbo.d': ["+5% di coppia; su un’aspirata +4% e fischio", "+5% torque; +4% and whistle on a non-turbo", "+5% Drehmoment; beim Sauger +4% und Pfeifen", "+5% de par; en un atmosférico +4% y silbido", "+5% de couple ; sur un atmo +4% et sifflement"],
   'mod.rapporti': ["Rapporti corti", "Short gears", "Kurze Übersetzung", "Desarrollos cortos", "Rapports courts"],
-  'mod.rapporti.d': ["più spunto, meno velocità in sesta", "more punch, less top speed in sixth", "mehr Antritt, weniger Spitze im Sechsten", "más empuje, menos velocidad en sexta", "plus de reprise, moins de vitesse en sixième"],
+  'mod.rapporti.d': ["prime tre marce più corte: più spunto, le alte restano lunghe", "shorter first three gears: more punch, top gears stay long", "kürzere erste drei Gänge: mehr Antritt, die oberen bleiben lang", "tres primeras marchas más cortas: más empuje, las altas siguen largas", "trois premiers rapports plus courts : plus de reprise, les hauts restent longs"],
   'mod.frizione': ["Frizione", "Clutch", "Kupplung", "Embrague", "Embrayage"],
   'mod.frizione.d': ["cambiate più rapide del 12%", "12% faster shifts", "12% schnellere Gangwechsel", "cambios un 12% más rápidos", "passages 12% plus rapides"],
   'mod.pneumatici': ["Pneumatici", "Tyres", "Reifen", "Neumáticos", "Pneus"],

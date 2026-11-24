@@ -85,9 +85,12 @@ const SIM = (function () {
   }
   function ratios(car) {
     if (car._r) return car._r;
-    const k = 2 * Math.PI * car.rw / 60, sc = shiftCenter(car), r = [];
-    for (let i = 0; i < 5; i++) r.push(sc * k / (car.vs[i] / 3.6));
-    r.push(car.redline * k / (car.top / 3.6));
+    /* rapporti calcolati sul limitatore di serie: più giri dal motore = più velocità in ogni marcia;
+       4a e 5a un po' più lunghe e una sesta di riposo con margine, che si allunga con la potenza delle elaborazioni */
+    const red0 = car.baseRed || car.redline, tm = car.topMul || 1;
+    const k = 2 * Math.PI * car.rw / 60, sc = red0 - 950, r = [];
+    for (let i = 0; i < 5; i++) r.push(sc * k / (car.vs[i] * (i === 3 ? 1.03 : i === 4 ? 1.06 : 1) * (i >= 3 ? Math.pow(tm, 0.6) : 1) / 3.6));
+    r.push(red0 * k / (car.top * 1.12 * tm / 3.6));
     car._r = r; return r;
   }
   function torqueAt(car, rpm) {
@@ -307,7 +310,7 @@ const SIM = (function () {
     { id: 'aspirazione', name: 'Aspirazione', desc: '+3,5% di coppia agli alti regimi' },
     { id: 'scarico', name: 'Scarico', desc: '+2% di coppia, voce più piena' },
     { id: 'turbo', name: 'Turbo', desc: '+5% di coppia; su un’aspirata +4% e fischio' },
-    { id: 'rapporti', name: 'Rapporti corti', desc: 'più spunto, meno velocità in sesta' },
+    { id: 'rapporti', name: 'Rapporti corti', desc: 'prime tre marce più corte: più spunto, le alte restano lunghe' },
     { id: 'frizione', name: 'Frizione', desc: 'cambiate più rapide del 12%' },
     { id: 'pneumatici', name: 'Pneumatici', desc: 'più aderenza: meno pattinamento al via' },
     { id: 'peso', name: 'Alleggerimento', desc: '−3,5% di massa per livello' },
@@ -332,8 +335,10 @@ const SIM = (function () {
     c.tq.forEach(p => { p[1] *= mul; if (p[0] > c.redline * 0.6) p[1] *= 1 + 0.035 * L('aspirazione'); });
     if (L('turbo')) c.turbo = true;
     c.nitro = L('nitro');
-    c.vs = c.vs.map(v => v * (1 - 0.03 * L('rapporti')));
-    c.top = base.top * (1 - 0.02 * L('rapporti'));
+    c.baseRed = red0;
+    c.topMul = Math.pow(mul * (1 + 0.035 * L('aspirazione') * 0.5), 0.33);
+    c.vs = c.vs.map((v, i) => v * (1 - (i < 3 ? 0.04 : 0.015) * L('rapporti')));
+    c.top = base.top * (1 - 0.01 * L('rapporti'));
     c.shiftMul = 1 - 0.12 * L('frizione');
     c.clutchMul = 1 + 0.25 * L('frizione');
     c.mu = base.mu + 0.045 * L('pneumatici');
