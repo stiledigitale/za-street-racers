@@ -77,7 +77,8 @@ const SIM = (function () {
   function shiftZone(car, cfg, gear) {
     const g = Math.max(0, Math.min(4, (gear || 1) - 1));
     const w = cfg.band * car.zoneMul * (1 - ZONE_NARROW * g), c = shiftCenter(car) + ZONE_UP * g;
-    return { lo: c - w / 2, hi: c + w / 2, c: c };
+    /* linea verde flash al centro: chi cambia proprio lì prende una spinta in più */
+    return { lo: c - w / 2, hi: c + w / 2, c: c, top: Math.max(30, w * 0.08) };
   }
   function launchZone(car, cfg) {
     const w = cfg.band * car.zoneMul, c = car.launchRpm;
@@ -184,11 +185,12 @@ const SIM = (function () {
     let q;
     if (r.onLimiter) q = 'fuorigiri';
     else if (rpm > z.hi + 350) q = 'tardiva';
+    else if (Math.abs(rpm - z.c) <= z.top) q = 'super';
     else if (rpm >= z.lo && rpm <= z.hi) q = 'perfetta';
     else if (rpm >= z.lo - 350) q = 'buona';
     else q = 'anticipata';
     r.shiftQ = q;
-    r.shiftT = (q === 'perfetta' ? 0.12 : (q === 'buona' ? 0.22 : 0.26)) * (r.car.shiftMul || 1);
+    r.shiftT = (q === 'super' ? 0.08 : q === 'perfetta' ? 0.12 : (q === 'buona' ? 0.22 : 0.26)) * (r.car.shiftMul || 1);
     if (q === 'tardiva' || q === 'fuorigiri') r.health = Math.max(0, r.health - cfg.damage * r.car.dmgMul);
     r.shifts.push({ gear: r.gear, q: q, rpm: Math.round(rpm), delta: Math.round(rpm - z.c), t: r.time });
     r.events.push({ t: 'shift', q: q });
@@ -236,7 +238,8 @@ const SIM = (function () {
       if (r.shiftT <= 0) {
         r.gear++;
         const q = r.shiftQ;
-        if (q === 'perfetta') { r.boostT = 0.8; r.boostMul = 1 + cfg.boost / 100; }
+        if (q === 'super') { r.boostT = 1.1; r.boostMul = 1 + cfg.boost * 1.7 / 100; }
+        else if (q === 'perfetta') { r.boostT = 0.8; r.boostMul = 1 + cfg.boost / 100; }
         else if (q === 'anticipata') { r.penT = 0.6; r.penMul = 0.65; }
         else if (q === 'tardiva' || q === 'fuorigiri') { r.penT = 0.5; r.penMul = 0.75; }
         if (r.ai) aiNextShift(r, cfg, rnd);

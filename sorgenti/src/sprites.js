@@ -1,2 +1,3 @@
-/* le vecchie auto sono state tolte: restano solo le auto v3 */
+/* registri delle auto: riempiti da cars3.js */
 const CAR_SPRITES = {};
+const CAR_PAINT = {};

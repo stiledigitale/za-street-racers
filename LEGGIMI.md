@@ -45,3 +45,10 @@ Come Tactical Racing Simulator: **Supabase Realtime**, progetto `stiledigitale_g
 - Bordo basso dello schermo: recinzione con siepe (metallo in zona industriale, legno al Garda) e cespugli; alberi dietro al muro; nuova fabbrica tra gli edifici di sfondo.
 - Fiammata più piccola; dopo il traguardo le auto continuano a frenare e scalare anche sotto la classifica, poi il motore si spegne.
 - Musica street racing del menu generata in Web Audio (nessun file), con pulsante ♪ ON/OFF in alto. Contatore online: solo il numero.
+
+## 24/11/2026 sera
+- Pulizia: tolti asset non più usati (vecchi edifici e skyline, 1,1 MB), tifosi alleggeriti (2,3 MB → 0,6 MB), moduli vuoti delle vecchie auto. Gioco da 13,4 a 10 MB.
+- "Come si gioca": 6 diapositive (scopo, partenza, cambiate, nitro, garage, modalità) dal pulsante nel menu.
+- "Condividi": sul telefono menu di condivisione con la copertina, sul computer pannello WhatsApp/Facebook/X/Telegram/Copia link.
+- Cambiata SUPER: linea verde flash al centro della zona (±4% della zona, minimo ±30 giri): cambiata più rapida e spinta 1,7 volte quella della perfetta.
+- Foto dei piloti uniformate: tutte con la testa alla stessa grandezza e posizione.

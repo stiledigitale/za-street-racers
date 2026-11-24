@@ -275,7 +275,8 @@
         if (q) {
           const last = p.shifts[p.shifts.length - 1];
           setMsg(QL(q), RENDER.Q_COLOR[q], T('race.shiftHint', (last.delta >= 0 ? '+' : '') + last.delta, last.gear, last.gear + 1), 0.8);
-          if (q === 'perfetta') { AUDIO.fx('perfetta'); p.flameT = 0.4; }
+          if (q === 'super') { AUDIO.fx('perfetta'); AUDIO.fx('perfetta'); p.flameT = 0.55; }
+          else if (q === 'perfetta') { AUDIO.fx('perfetta'); p.flameT = 0.4; }
           else if (q === 'tardiva' || q === 'fuorigiri') { AUDIO.fx('bad'); AUDIO.fx('backfire'); p.flameT = 0.4; }
           else AUDIO.fx('shift');
           if (p.car.turbo) AUDIO.fx('blowoff');
@@ -661,6 +662,97 @@
     const el = document.createElement('div'); el.className = 'lbres'; el.textContent = T('share.saved'); el.style.cssText = 'margin-top:0.3em;color:#9fd8ff;font-weight:800'; $('rSub').after(el);
   }
 
+  /* ---------- condividi il gioco: copertina + link (sul telefono il menu di condivisione, sul computer un pannello) ---------- */
+  const GAME_URL = 'https://za-street-racers.pages.dev';
+  $('sgClose').addEventListener('click', () => { $('sgPanel').hidden = true; });
+  async function shareGame() {
+    const text = T('sg.text');
+    try {
+      if (navigator.share && touchSeen) {
+        let files = null;
+        try { const blob = await (await fetch(COVER_ART)).blob(); const f = new File([blob], 'za-street-racers.jpg', { type: 'image/jpeg' }); if (navigator.canShare && navigator.canShare({ files: [f] })) files = [f]; } catch (e) { }
+        await navigator.share(Object.assign({ title: 'ZA Street Racers', text: text + ' ' + GAME_URL }, files ? { files: files } : { url: GAME_URL }));
+        return;
+      }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    const u = encodeURIComponent(GAME_URL), t = encodeURIComponent(text);
+    $('sgRow').innerHTML = [['WhatsApp', 'https://wa.me/?text=' + t + '%20' + u], ['Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + u], ['X', 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u], ['Telegram', 'https://t.me/share/url?url=' + u + '&text=' + t]]
+      .map(l => '<a href="' + l[1] + '" target="_blank" rel="noopener">' + l[0] + '</a>').join('') + '<button type="button" id="sgCopy">' + T('sg.copy') + '</button>';
+    $('sgCopy').addEventListener('click', () => { try { navigator.clipboard.writeText(text + ' ' + GAME_URL); } catch (e) { } $('sgCopy').textContent = T('sg.copied'); });
+    $('sgPanel').hidden = false;
+  }
+
+  /* ---------- come si gioca: sei diapositive con disegni fatti al volo ---------- */
+  let howI = 0;
+  const HOW_N = 6, HIMG = { bottle: new Image(), frame: new Image(), fill: new Image() };
+  if (typeof NITRO_UI !== 'undefined') { HIMG.bottle.src = NITRO_UI.bottle; HIMG.frame.src = NITRO_UI.frame; HIMG.fill.src = NITRO_UI.fill; }
+  $('howPrev').addEventListener('click', () => { AUDIO.fx('click'); showHow(howI - 1); });
+  $('howNext').addEventListener('click', () => { AUDIO.fx('click'); if (howI >= HOW_N - 1) goMenu(); else showHow(howI + 1); });
+  function showHow(i) {
+    howI = Math.max(0, Math.min(HOW_N - 1, i)); showScreen('scrHow');
+    $('howTitle').textContent = T('how.t' + howI); $('howTxt').innerHTML = T('how.p' + howI);
+    $('howDots').innerHTML = Array.from({ length: HOW_N }, (_, k) => '<i class="' + (k === howI ? 'on' : '') + '" data-hd="' + k + '"></i>').join('');
+    $('howDots').querySelectorAll('[data-hd]').forEach(d => d.addEventListener('click', () => showHow(+d.dataset.hd)));
+    $('howPrev').disabled = howI === 0; $('howNext').textContent = howI === HOW_N - 1 ? T('common.menu') : '›';
+    drawHow(); setTimeout(drawHow, 350);
+  }
+  addEventListener('keydown', e => { if (!$('scrHow').classList.contains('on')) return; if (e.key === 'ArrowRight') showHow(howI + 1); else if (e.key === 'ArrowLeft') showHow(howI - 1); });
+  function drawHow() {
+    const cv = $('howCv'), c = cv.getContext('2d'), W = cv.width, H = cv.height, i = howI;
+    const FD = (getComputedStyle(document.documentElement).getPropertyValue('--f-d') || 'sans-serif').trim();
+    const txt = (t, x, y, size, col, al) => { c.font = 'italic 900 ' + size + 'px ' + FD; c.textAlign = al || 'center'; c.textBaseline = 'middle'; c.lineWidth = size * 0.16; c.strokeStyle = '#14111c'; c.strokeText(t, x, y); c.fillStyle = col; c.fillText(t, x, y); };
+    const rr = (x, y, w, h, r, fill, stroke) => { c.beginPath(); c.roundRect(x, y, w, h, r); if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.lineWidth = 5; c.strokeStyle = stroke; c.stroke(); } };
+    const tach = (x, y, w, h, lo, hi, needle, label) => {
+      rr(x, y, w, h, 12, '#0f0c18', '#14111c');
+      c.fillStyle = '#2ee66b'; c.fillRect(x + w * lo, y + 6, w * (hi - lo), h - 12);
+      c.fillStyle = 'rgba(255,60,60,0.85)'; c.fillRect(x + w * 0.93, y + 6, w * 0.07 - 6, h - 12);
+      c.fillStyle = '#5a5470'; for (let k = 1; k < 8; k++) c.fillRect(x + w * k / 8, y + h - 14, 3, 8);
+      c.fillStyle = '#fff'; c.fillRect(x + w * needle - 3, y - 8, 6, h + 16);
+      if (label) txt(label, x - 14, y + h / 2, h * 0.55, '#ffd23f', 'right');
+    };
+    const car = (id, x, y, sc, look) => { try { RENDER.drawCar(c, id, { x: x, y: y, sc: sc, look: Object.assign({ paint: 'orig', livery: 'nessuna', accent: '#14111c', rim: 'orig', stickers: [] }, look || {}) }); } catch (e) { } };
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#3a2a5e'); g.addColorStop(1, '#1b1530'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const road = (y0, y1) => { c.fillStyle = '#4a4752'; c.fillRect(0, y0, W, y1 - y0); c.fillStyle = '#f4f1e8'; for (let x = 20; x < W; x += 90) c.fillRect(x, (y0 + y1) / 2 - 3, 50, 6); c.fillStyle = '#14111c'; c.fillRect(0, y0 - 4, W, 4); c.fillRect(0, y1, W, 4); };
+    if (i === 0) {
+      road(300, 500);
+      for (let k = 0; k < 6; k++) for (let j = 0; j < 2; j++) { c.fillStyle = (k + j) % 2 ? '#fff' : '#111'; c.fillRect(930 + j * 20, 300 + k * 33, 20, 33); }
+      car('berlina', 700, 392, 88); car('gt', 600, 490, 100, { livery: 'teamza' });
+      c.strokeStyle = '#ffd23f'; c.lineWidth = 8; c.beginPath(); c.moveTo(80, 200); c.lineTo(900, 200); c.stroke();
+      c.fillStyle = '#ffd23f'; c.beginPath(); c.moveTo(930, 200); c.lineTo(890, 178); c.lineTo(890, 222); c.fill();
+      txt('402 m', 490, 140, 96, '#fff');
+    } else if (i === 1) {
+      rr(250, 40, 540, 130, 30, '#14111c');
+      for (let k = 0; k < 5; k++) { c.beginPath(); c.arc(310 + k * 105, 105, 38, 0, Math.PI * 2); c.fillStyle = '#ff2a2a'; c.shadowColor = '#ff2a2a'; c.shadowBlur = 30; c.fill(); c.shadowBlur = 0; }
+      tach(160, 300, 560, 70, 0.46, 0.62, 0.55);
+      txt('RPM', 440, 260, 40, '#cfe9ff');
+      c.beginPath(); c.arc(880, 335, 95, 0, Math.PI * 2); c.fillStyle = '#ff8a3d'; c.fill(); c.lineWidth = 8; c.strokeStyle = '#14111c'; c.stroke();
+      c.beginPath(); c.arc(880, 335, 118, 0, Math.PI * 2); c.strokeStyle = 'rgba(255,210,63,0.8)'; c.lineWidth = 10; c.stroke();
+      txt('GAS', 880, 335, 56, '#fff');
+      txt(T('hud.red'), 520, 470, 44, '#ff6b6b');
+    } else if (i === 2) {
+      [[0.62, 0.86, 0.75, '2ª'], [0.70, 0.88, 0.80, '4ª'], [0.78, 0.89, 0.84, '6ª']].forEach((r, k) => tach(200, 70 + k * 120, 620, 60, r[0], r[1], r[2], r[3]));
+      [[T('q.perfetta'), '#2ee66b'], [T('q.buona'), '#9be15d'], [T('q.tardiva'), '#ff5a5a']].forEach((q, k) => { rr(150 + k * 260, 450, 230, 70, 16, '#14111c'); txt(q[0], 265 + k * 260, 486, 36, q[1]); });
+    } else if (i === 3) {
+      road(360, 520); 
+      const fx = 330, fy = 455; const fg = c.createLinearGradient(fx - 260, 0, fx, 0); fg.addColorStop(0, 'rgba(60,180,255,0)'); fg.addColorStop(1, 'rgba(150,230,255,0.95)');
+      c.fillStyle = fg; c.beginPath(); c.moveTo(fx, fy - 14); c.lineTo(fx - 260, fy); c.lineTo(fx, fy + 14); c.fill();
+      car('berlina', 760, 478, 140);
+      if (HIMG.bottle.complete && HIMG.bottle.width) c.drawImage(HIMG.bottle, 50, 20, 230 * HIMG.bottle.width / HIMG.bottle.height, 230);
+      if (HIMG.frame.complete && HIMG.frame.width) { const fw = 620, fh = fw * HIMG.frame.height / HIMG.frame.width; c.drawImage(HIMG.frame, 270, 120 - fh / 2, fw, fh); if (HIMG.fill.complete) { const inn = NITRO_UI.inner; c.drawImage(HIMG.fill, 270 + inn[0] * fw, 120 - fh / 2 + inn[1] * fh, (inn[2] - inn[0]) * fw * 0.6, (inn[3] - inn[1]) * fh); } }
+      txt('+30%', 920, 250, 70, '#5fd8ff');
+      rr(860, 300, 120, 50, 12, '#fff6e8', '#14111c'); txt('N', 920, 326, 34, '#14111c');
+    } else if (i === 4) {
+      c.fillStyle = '#2a2340'; c.fillRect(0, 420, W, H - 420);
+      car('gt', 760, 450, 135, { livery: 'teamza' });
+      [[T('mod.turbo'), 80, 70], [T('mod.motore'), 330, 50], [T('mod.nitro'), 590, 70], ['ZA', 820, 50]].forEach(m => { rr(m[1], m[2], 190, 62, 14, '#14111c', '#ffd23f'); txt(m[0], m[1] + 95, m[2] + 32, 32, '#fff'); });
+      rr(840, 470, 170, 80, 18, '#ff2e7e', '#14111c'); txt('PRO', 925, 511, 46, '#fff');
+    } else if (i === 5) {
+      if (COVER.complete && COVER.width) c.drawImage(COVER, 0, 0, W, H);
+      rr(30, H - 110, W - 60, 80, 20, 'rgba(20,14,34,0.88)', '#ffd23f');
+      [T('g.race').replace(' »', ''), T('menu.solo'), 'ONLINE', T('menu.career') || ''].forEach((t, k) => { c.save(); txt(t.toUpperCase(), 155 + k * 245, H - 70, 30, '#fff'); c.restore(); });
+    }
+  }
+
   /* ---------- copertina iniziale con finta barra di caricamento ---------- */
   (function splash() {
     const sp = $('splash'); if (!sp) return;
@@ -682,7 +774,7 @@
   })();
 
   /* ---------- schermate ---------- */
-  const SCREENS = ['scrLb', 'scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
+  const SCREENS = ['scrHow', 'scrLb', 'scrOnline', 'scrMenu', 'scrGarage', 'scrRules', 'scrCareer', 'scrPilots', 'scrResults', 'scrPause'];
   function showScreen(id) {
     SCREENS.forEach(s => $(s).classList.toggle('on', s === id));
     if (id) { $('touch').classList.remove('on'); $('corner').classList.remove('on'); }
@@ -708,6 +800,8 @@
     if (a === 'quick') startRace('quick', 1);
     else if (a === 'solo') startRace('solo', 1);
     else if (a === 'share') shareTime();
+    else if (a === 'shareGame') shareGame();
+    else if (a === 'how') { G.phase = 'menu'; showHow(0); }
     else if (a === 'career') { G.phase = 'menu'; renderCareer(); showScreen('scrCareer'); }
     else if (a === 'garage') { G.phase = 'menu'; renderGarage(true); showScreen('scrGarage'); }
     else if (a === 'rules') { renderRules(); showScreen('scrRules'); }
@@ -1088,7 +1182,7 @@
     const p = G.player;
     const fin = G.racers.filter(r => r.finished).sort((a, b) => a.finishTime - b.finishTime), dnf = G.racers.filter(r => !r.finished);
     const order = fin.concat(dnf), pos = p.finished ? order.indexOf(p) + 1 : 0;
-    const perf = p.shifts.filter(s => s.q === 'perfetta').length;
+    const perf = p.shifts.filter(s => s.q === 'perfetta' || s.q === 'super').length;
     const solo = G.mode === 'solo';
     const earn = pos ? (solo ? 0 : reward(pos, G.mode === 'career' ? G.tappa : 1)) + perf * 20 : 0;
     if (G.mode === 'online') { ON.inRace = false; onTrack(); }
@@ -1124,7 +1218,7 @@
       $('rSub').textContent = !p.finished ? T('res.blownSub') : soloNew ? T('res.soloNew') : T('res.soloBest', sb.toFixed(3));
     }
     const best = p.shifts.slice().sort((a, b) => Math.abs(a.delta) - Math.abs(b.delta))[0];
-    const QD = { perfetta: '#6fe08a', buona: '#f2d36b', anticipata: '#7fc4f0', tardiva: '#ffa25a', fuorigiri: '#ff6a55', lenta: '#7fc4f0', eccessiva: '#ffa25a' };
+    const QD = { super: '#e8ff4a', perfetta: '#6fe08a', buona: '#f2d36b', anticipata: '#7fc4f0', tardiva: '#ffa25a', fuorigiri: '#ff6a55', lenta: '#7fc4f0', eccessiva: '#ffa25a' };
     const chips = p.shifts.map(s => '<span class="chip" style="color:' + QD[s.q] + '">' + s.gear + '→' + (s.gear + 1) + ' ' + QL(s.q).toLowerCase() + '</span>').join('');
     $('rStats').innerHTML =
       '<dt>' + T('res.launch') + '</dt><dd><span style="font-weight:700;color:' + QD[p.launch.q] + '">' + QL(p.launch.q).toLowerCase() + '</span> · ' + T('res.launchV', p.launch.rpm, (p.launch.delta >= 0 ? '+' : '') + p.launch.delta) + '</dd>' +

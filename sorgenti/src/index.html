@@ -441,6 +441,22 @@ td.r, th.r { text-align: right; }
 @keyframes spPulse { 50% { transform: scale(1.06); } }
 .msolo { position: absolute; right: 2cqw; bottom: 35.5cqh; width: 26cqw; height: 10cqh; flex-direction: column; gap: 0; font-size: 1em; }
 .msolo b { font-size: 1.35em; line-height: 1; } .msolo span { font-size: 0.72em; font-family: var(--f-b); font-style: normal; font-weight: 700; }
+/* come si gioca: diapositive */
+.mhow { margin-left: 1em; padding: 0.25em 0.8em; border: 0.18em solid var(--ink); border-radius: 0.6em; background: linear-gradient(#ffd23f, #f0a81a); box-shadow: 0 0.15em 0 var(--ink); color: var(--ink); font: 900 italic 0.95em var(--f-d); cursor: pointer; text-shadow: none; }
+#scrHow { padding: 1em 1.6em; overflow: hidden; }
+#scrHow .spread, #scrLb .spread { padding-right: 9cqh; }
+#scrHow h2 { font-size: 1.7em; }
+.howbox { display: flex; gap: 1.4em; align-items: stretch; margin-top: 0.6em; height: 62cqh; }
+#howCv { height: 100%; aspect-ratio: 16 / 9; border: 3px solid var(--ink); border-radius: 0.8em; box-shadow: 5px 6px 0 var(--ink); background: #1b1530; }
+.howtxt { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.7em; font-size: 1.35em; line-height: 1.35; color: var(--fg); }
+.howtxt p { margin: 0; } .howtxt b { color: #ffd23f; } .howtxt kbd { font: 800 0.85em var(--f-b); padding: 0.05em 0.45em; border: 2px solid var(--ink); border-radius: 0.35em; background: #fff6e8; color: var(--ink); }
+.howNav { display: flex; align-items: center; justify-content: center; gap: 1.2em; margin-top: 0.9em; }
+.howNav .btn { font-size: 1.8em; padding: 0.05em 1.1em; }
+.howDots { display: flex; gap: 0.5em; } .howDots i { width: 0.8em; height: 0.8em; border-radius: 50%; background: #3b3452; border: 2px solid var(--ink); cursor: pointer; } .howDots i.on { background: #ffd23f; }
+.sgpanel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 0.8em; padding: 1.2em 1.6em; background: #1c1726; border: 3px solid var(--ink); border-radius: 1em; box-shadow: 6px 7px 0 var(--ink); color: #fff; font-family: var(--f-d); font-style: italic; font-size: 1.2em; }
+.sgpanel[hidden] { display: none; }
+.sgrow { display: flex; gap: 0.6em; flex-wrap: wrap; justify-content: center; }
+.sgrow a, .sgrow button { padding: 0.45em 0.9em; border: 2px solid var(--ink); border-radius: 0.6em; background: #ffd23f; color: var(--ink); font: 900 italic 0.85em var(--f-d); text-decoration: none; cursor: pointer; box-shadow: 0 3px 0 var(--ink); }
 /* classifica online e contatore */
 #scrLb { padding: 1em 1.6em; overflow: hidden; }
 #scrLb h2 { font-size: 1.6em; }
@@ -511,7 +527,10 @@ td.r, th.r { text-align: right; }
       <button class="gbtn dark mb" data-act="lb" type="button"><b data-i18n="lb.title">Classifica online</b><span data-i18n="lb.menuSub">I migliori tempi del mondo</span></button>
     </nav>
     <div class="mtrack"><span data-i18n="menu.track">Pista</span>
-      <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div></div>
+      <div class="seg" id="trackSeg"><button type="button" data-t="citta" data-i18n="track.citta">Zona industriale</button><button type="button" data-t="garda" data-i18n="track.garda">Lago di Garda</button></div>
+      <button class="mhow" data-act="how" type="button" data-i18n="how.btn">❓ COME SI GIOCA</button>
+      <button class="mhow" data-act="shareGame" type="button" data-i18n="sg.btn">📤 CONDIVIDI</button></div>
+    <div class="sgpanel" id="sgPanel" hidden><b data-i18n="sg.title">Condividi il gioco</b><div class="sgrow" id="sgRow"></div><button class="btn" type="button" id="sgClose" data-i18n="common.close">Chiudi</button></div>
     <div class="keys"></div>
     <button class="gbtn blue msolo" data-act="solo" type="button"><b data-i18n="menu.solo">A CRONOMETRO</b><span data-i18n="menu.soloSub">Solo tu e il tempo</span></button>
     <button class="gbtn purple monline" data-act="online" type="button"><b data-i18n="menu.online">ONLINE</b><span data-i18n="menu.onlineSub">2-4 piloti veri</span></button>
@@ -598,6 +617,14 @@ td.r, th.r { text-align: right; }
     </div>
     <p class="onmsg" id="onMsg"></p>
   </section>
+  <section class="screen" id="scrHow" aria-label="Come si gioca">
+    <div class="spread">
+      <div><span class="kicker" data-i18n="how.kicker">Come si gioca</span><h2 id="howTitle"></h2></div>
+      <div class="row"><button class="btn primary" data-act="menu" type="button" data-i18n="common.menu">Menu</button></div>
+    </div>
+    <div class="howbox"><canvas id="howCv" width="1040" height="585"></canvas><div class="howtxt" id="howTxt"></div></div>
+    <div class="howNav"><button class="btn" id="howPrev" type="button">‹</button><div class="howDots" id="howDots"></div><button class="btn primary" id="howNext" type="button">›</button></div>
+  </section>
   <section class="screen" id="scrLb" aria-label="Classifica">
     <div class="spread">
       <div><span class="kicker" data-i18n="lb.title">Classifica online</span><h2 data-i18n="lb.sub">Il miglior tempo di ogni pilota</h2></div>
@@ -659,8 +686,6 @@ td.r, th.r { text-align: right; }
 <script>/*ASSETS*/</script>
 <script>/*PILOTS*/</script>
 <script>/*SPRITES*/</script>
-<script>/*PAINT*/</script>
-<script>/*CARS2*/</script>
 <script>/*CARS3*/</script>
 <script>/*SIM*/</script>
 <script>/*NET*/</script>

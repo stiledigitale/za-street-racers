@@ -348,26 +348,6 @@ const RENDER = (function () {
       else if (LIGHT === 'tramonto') { c2.fillStyle = 'rgba(255,130,70,0.07)'; c2.fillRect(0, 0, w, h); }
       c2.globalCompositeOperation = 'source-over';
     };
-    if (IND.length && IND.every(b => b.im.complete && b.im.width)) {
-      const PXM = 13, GAP = 18, gy = BASE + 6;
-      const pieces = IND.map(b => { const h = Math.round(b.m * PXM); return { im: b.im, h: h, w: Math.round(b.im.width * h / b.im.height) }; });
-      const TWc = pieces.reduce((s2, p) => s2 + p.w + GAP, 0), cb = mk(TWc, 420), c2 = cb.getContext('2d');
-      c2.imageSmoothingQuality = 'high';
-      let x = 0; pieces.forEach(p => { c2.drawImage(p.im, x, gy - p.h, p.w, p.h); x += p.w + GAP; });
-      shadeLight(c2, TWc, 420);
-      T.bd = cb;
-    }
-    /* sfondo lontano: skyline di fabbriche */
-    if (SKYL && SKYL.complete && SKYL.width) {
-      /* tile specchiato: i bordi combaciano sempre, niente tagli netti nel parallasse */
-      /* l'immagine era due skyline incollate con un taglio netto: si usa solo la parte col paese e le colline */
-      const sx0 = Math.round(SKYL.width * 811 / 1787), sw = SKYL.width - sx0;
-      const h = 180, w = Math.round(sw * h / SKYL.height), cv = mk(w * 2, 420), c2 = cv.getContext('2d');
-      c2.drawImage(SKYL, sx0, 0, sw, SKYL.height, 0, BASE - 30 - h, w, h);
-      c2.save(); c2.translate(w * 2, 0); c2.scale(-1, 1); c2.drawImage(SKYL, sx0, 0, sw, SKYL.height, 0, BASE - 30 - h, w, h); c2.restore();
-      shadeLight(c2, w * 2, 420);
-      T.fa = cv;
-    }
     /* zona industriale nuova: colline, paese e fabbriche su tre livelli separati (parallasse) */
     T.hl = null; T.hl2 = null;
     if (ENV === 'citta' && BGL && [BGL.hills, BGL.village, BGL.factories].every(i => i.complete && i.width)) {
@@ -691,7 +671,6 @@ const RENDER = (function () {
   const mkImg = src => { const i = new Image(); i.src = src; return i; };
   const FXS = typeof FX_SMOKE !== 'undefined' ? FX_SMOKE.map(mkImg) : [], FXF = typeof FX_FLAME !== 'undefined' ? FX_FLAME.map(mkImg) : [];
   /* zona industriale: edifici di Christian, recinzione, skyline di fabbriche */
-  const IND = (typeof IND_BUILDINGS !== 'undefined' ? IND_BUILDINGS : []).map(b => ({ k: b[0], m: b[1], im: mkImg(b[2]) }));
   const FENCE = typeof IND_FENCE !== 'undefined' ? mkImg(IND_FENCE) : null;
   const CURB = typeof IND_CURB !== 'undefined' ? mkImg(IND_CURB) : null;
   const ROADIMG = typeof IND_ROAD !== 'undefined' ? mkImg(IND_ROAD.img) : null;
@@ -736,7 +715,6 @@ const RENDER = (function () {
   const JERSEY = typeof IND_JERSEY !== 'undefined' ? mkImg(IND_JERSEY) : null;
   const RAIL = typeof IND_RAIL !== 'undefined' ? mkImg(IND_RAIL) : null;
   const BANNERS = (typeof IND_BANNERS !== 'undefined' ? IND_BANNERS : []).map(mkImg);
-  const SKYL = typeof IND_SKYLINE !== 'undefined' ? mkImg(IND_SKYLINE) : null;
   function crowdTiles() {
     if (T.crowdT || !CROWD.complete || !CROWD.width) return T.crowdT;
     const h = 108, w = Math.round(CROWD.width * h / CROWD.height);
@@ -1137,6 +1115,7 @@ const RENDER = (function () {
   const SP = {};
   const loads = [];
   function img(src) { const i = new Image(); i.src = src; loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()); return i; }
+  /* auto v3: sagome e livelli di vernice (registrati da cars3.js in CAR_SPRITES / CAR_PAINT) */
   Object.keys(CAR_SPRITES).forEach(k => {
     const d = CAR_SPRITES[k];
     SP[k] = Object.assign({}, d, { body: img(d.img), wheels: d.wheels.map(w => Object.assign({}, w, { im: img(w.img) })) });
@@ -1148,7 +1127,7 @@ const RENDER = (function () {
   /* cerchi intercambiabili delle auto nuove e logo per gli adesivi */
   const RIMS = {}; (typeof CAR_RIMS !== 'undefined' ? CAR_RIMS : []).forEach(r => { RIMS[r.id] = img(r.img); });
   const ZAIMG = typeof ZA_LOGO !== 'undefined' ? img(ZA_LOGO) : null;
-  IND.map(b => b.im).concat(JERSEY ? [JERSEY] : [], RAIL ? [RAIL] : [], BANNERS, FENCE ? [FENCE] : [], CURB ? [CURB] : [], ROADIMG ? [ROADIMG] : [], LIGHTS5 ? [LIGHTS5] : [], GANTRY ? [GANTRY] : [], LAMPS ? [LAMPS.red, LAMPS.green] : [], SLAMPS.map(l => l.im), DECALS, SKYL ? [SKYL] : [], SKYI ? [SKYI.sun].concat(SKYI.clouds) : [], GIMG ? Object.values(GIMG) : [], PROPI, GRASSI ? [GRASSI] : [], SIGNI ? [SIGNI.s100, SIGNI.s200, SIGNI.blank] : [], HFLAG ? HFLAG.f : [], HFIN ? HFIN.f : [], DSI ? Object.values(DSI) : [], VEGI ? Object.values(VEGI) : [], LFI ? Object.values(LFI) : [], BGL ? [BGL.hills, BGL.village, BGL.factories] : [], BGX, FXS, FXF, FANIMG.flat()).forEach(i => loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()));
+  [].concat(JERSEY ? [JERSEY] : [], RAIL ? [RAIL] : [], BANNERS, FENCE ? [FENCE] : [], CURB ? [CURB] : [], ROADIMG ? [ROADIMG] : [], LIGHTS5 ? [LIGHTS5] : [], GANTRY ? [GANTRY] : [], LAMPS ? [LAMPS.red, LAMPS.green] : [], SLAMPS.map(l => l.im), DECALS, SKYI ? [SKYI.sun].concat(SKYI.clouds) : [], GIMG ? Object.values(GIMG) : [], PROPI, GRASSI ? [GRASSI] : [], SIGNI ? [SIGNI.s100, SIGNI.s200, SIGNI.blank] : [], HFLAG ? HFLAG.f : [], HFIN ? HFIN.f : [], DSI ? Object.values(DSI) : [], VEGI ? Object.values(VEGI) : [], LFI ? Object.values(LFI) : [], BGL ? [BGL.hills, BGL.village, BGL.factories] : [], BGX, FXS, FXF, FANIMG.flat()).forEach(i => loads.push(i.decode ? i.decode().catch(() => { }) : Promise.resolve()));
   const ready = Promise.all(loads);
   const SHAPES = {};
   Object.keys(CARMAP).forEach(id => {
@@ -1535,6 +1514,12 @@ const RENDER = (function () {
     band(zone.lo, zone.hi, inZone ? '#7dff4a' : '#2fd04a', R - 24, R - 3);
     c.strokeStyle = '#121216'; c.lineWidth = 2.5;
     for (let v = zone.lo - 350; v <= zone.hi + 350; v += (zone.hi - zone.lo + 700) / 6) { const a = A(v); c.beginPath(); c.moveTo(cx + Math.cos(a) * (R - 25), cy + Math.sin(a) * (R - 25)); c.lineTo(cx + Math.cos(a) * (R - 2), cy + Math.sin(a) * (R - 2)); c.stroke(); }
+    if (zone.top) {
+      /* linea verde flash al centro della zona: cambiata SUPER */
+      const pulse = 0.75 + 0.25 * Math.sin(performance.now() / 90);
+      c.save(); c.shadowColor = '#e8ff4a'; c.shadowBlur = 14 * pulse;
+      band(zone.c - zone.top, zone.c + zone.top, 'rgba(232,255,74,' + pulse.toFixed(2) + ')', R - 27, R - 1); c.restore();
+    }
     c.strokeStyle = '#f4f4f6'; c.fillStyle = '#f4f4f6'; c.lineCap = 'butt';
     c.font = fd(900, R * 0.22); c.textAlign = 'center'; c.textBaseline = 'middle';
     for (let v = 0; v <= max + 1; v += 250) {
@@ -1558,7 +1543,7 @@ const RENDER = (function () {
     c.restore();
   }
 
-  const Q_COLOR = { perfetta: '#7dff4a', buona: '#fff3a8', anticipata: '#7fd8ff', tardiva: '#ffa23a', fuorigiri: '#ff4b3e', lenta: '#7fd8ff', eccessiva: '#ffa23a' };
+  const Q_COLOR = { super: '#d9ff3a', perfetta: '#7dff4a', buona: '#fff3a8', anticipata: '#7fd8ff', tardiva: '#ffa23a', fuorigiri: '#ff4b3e', lenta: '#7fd8ff', eccessiva: '#ffa23a' };
   const Q_LABEL = new Proxy({}, { get: (o, k) => TX('q.' + String(k)) });
 
   function skewPanel(c, x, y, w, h, k, fill) {

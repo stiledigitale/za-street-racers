@@ -1,1 +1,0 @@
-const CAR_PAINT = {};
