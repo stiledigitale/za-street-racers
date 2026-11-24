@@ -124,6 +124,7 @@ const I18N = {
   'rim.k20': ["Argento stella", "Silver star", "Silber Stern", "Plata estrella", "Argent étoile"],
 
   /* modalità a cronometro, condivisione, copertina */
+  'menu.zad': ["▶ GIOCA A ZA DEMOLITION", "▶ PLAY ZA DEMOLITION", "▶ ZA DEMOLITION SPIELEN", "▶ JUEGA A ZA DEMOLITION", "▶ JOUE À ZA DEMOLITION"],
   'menu.solo': ["A CRONOMETRO", "TIME ATTACK", "ZEITFAHREN", "CONTRARRELOJ", "CONTRE-LA-MONTRE"],
   'menu.soloSub': ["Solo tu e il tempo", "Just you and the clock", "Nur du und die Uhr", "Solo tú y el reloj", "Toi et le chrono"],
   'res.solo': ["A cronometro · {0}{1} m", "Time attack · {0}{1} m", "Zeitfahren · {0}{1} m", "Contrarreloj · {0}{1} m", "Contre-la-montre · {0}{1} m"],
