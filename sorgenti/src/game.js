@@ -665,7 +665,10 @@
     const sp = $('splash'); if (!sp) return;
     if (navigator.webdriver && !/splash=1/.test(location.search)) { sp.remove(); return; }
     $('splashImg').src = COVER_ART;
+    /* la copertina parte solo dopo la schermata "gira il telefono": in verticale la barra resta ferma a zero */
+    const portrait = matchMedia('(orientation: portrait) and (pointer: coarse)');
     let v = 0; const tick = setInterval(() => {
+      if (portrait.matches) { v = 0; $('spFill').style.width = '0%'; return; }
       v = Math.min(100, v + 3 + Math.random() * 9); $('spFill').style.width = v + '%';
       if (v >= 100) { clearInterval(tick); sp.classList.add('ready'); }
     }, 110);
