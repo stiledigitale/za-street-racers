@@ -130,7 +130,7 @@ const I18N = {
   'res.soloNew': ["NUOVO RECORD PERSONALE!", "NEW PERSONAL BEST!", "NEUE BESTZEIT!", "¡NUEVO RÉCORD PERSONAL!", "NOUVEAU RECORD PERSO !"],
   'res.soloBest': ["Il tuo record: {0} s", "Your best: {0} s", "Deine Bestzeit: {0} s", "Tu récord: {0} s", "Ton record : {0} s"],
   'share.btn': ["CONDIVIDI IL TEMPO", "SHARE YOUR TIME", "ZEIT TEILEN", "COMPARTIR TIEMPO", "PARTAGER LE TEMPS"],
-  'share.best': ["MIGLIOR TEMPO", "BEST TIME", "BESTZEIT", "MEJOR TIEMPO", "MEILLEUR TEMPS"],
+  'share.best': ["IL MIO TEMPO", "MY TIME", "MEINE ZEIT", "MI TIEMPO", "MON TEMPS"],
   'share.text': ["Ho fatto {0} s sui {1} m di {2} in ZA Street Racers! Riesci a battermi?", "I did {0} s on the {1} m at {2} in ZA Street Racers! Can you beat me?", "Ich habe {0} s auf {1} m bei {2} in ZA Street Racers geschafft! Schaffst du mehr?", "¡Hice {0} s en los {1} m de {2} en ZA Street Racers! ¿Me ganas?", "J'ai fait {0} s sur {1} m à {2} dans ZA Street Racers ! Tu me bats ?"],
   'share.saved': ["Immagine salvata: pubblicala dove vuoi!", "Image saved: post it anywhere!", "Bild gespeichert: poste es, wo du willst!", "Imagen guardada: ¡publícala donde quieras!", "Image enregistrée : publie-la où tu veux !"],
   'splash.tap': ["TOCCA PER GIOCARE", "TAP TO PLAY", "TIPPEN ZUM SPIELEN", "TOCA PARA JUGAR", "TOUCHE POUR JOUER"],

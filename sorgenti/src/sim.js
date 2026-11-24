@@ -89,8 +89,8 @@ const SIM = (function () {
        4a e 5a un po' più lunghe e una sesta di riposo con margine, che si allunga con la potenza delle elaborazioni */
     const red0 = car.baseRed || car.redline, tm = car.topMul || 1;
     const k = 2 * Math.PI * car.rw / 60, sc = red0 - 950, r = [];
-    for (let i = 0; i < 5; i++) r.push(sc * k / (car.vs[i] * (i === 3 ? 1.03 : i === 4 ? 1.06 : 1) * (i >= 3 ? Math.pow(tm, 0.6) : 1) / 3.6));
-    r.push(red0 * k / (car.top * 1.12 * tm / 3.6));
+    for (let i = 0; i < 5; i++) r.push(sc * k / (car.vs[i] * (i === 3 ? 1.04 : i === 4 ? 1.11 : 1) * (i >= 3 ? Math.pow(tm, 0.6) : 1) / 3.6));
+    r.push(red0 * k / (car.top * 1.2 * tm / 3.6));
     car._r = r; return r;
   }
   function torqueAt(car, rpm) {

@@ -633,7 +633,8 @@
   /* ---------- immagine da condividere: copertina, miglior tempo e nickname ---------- */
   const COVER = new Image(); COVER.src = COVER_ART;
   async function shareTime() {
-    const track = G.lightTrack || save.track, dist = G.dist || 402, t = (save.soloBest || {})[track + '_' + dist]; if (!t) return;
+    /* si condivide il tempo appena fatto */
+    const p = G.player, track = G.lightTrack || save.track, dist = G.dist || 402, t = p && p.finished ? p.finishTime : 0; if (!t) return;
     const nick = pilotName(save.pilot) || 'Pilota', tname = T('track.' + track), url = 'https://za-street-racers.pages.dev';
     const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 900; const c = cv.getContext('2d');
     if (COVER.complete && COVER.width) c.drawImage(COVER, 0, 0, 1600, 900);
@@ -1104,7 +1105,7 @@
       }
     }
     let soloNew = false;
-    if (solo && p.finished) { save.soloBest = save.soloBest || {}; const sk = G.lightTrack + '_' + G.dist; if (!save.soloBest[sk] || p.finishTime < save.soloBest[sk]) { save.soloBest[sk] = p.finishTime; soloNew = true; } }
+    if (solo && p.finished) { save.soloBest = save.soloBest || {}; if (!save.soloV2) { save.soloBest = {}; save.soloV2 = true; } const sk = G.lightTrack + '_' + G.dist; if (!save.soloBest[sk] || p.finishTime < save.soloBest[sk]) { save.soloBest[sk] = p.finishTime; soloNew = true; } }
     persist();
     $('rKicker').textContent = solo ? T('res.solo', G.lightTrack === 'garda' ? T('track.garda') + ' · ' : '', G.dist) : G.mode === 'online' ? T('on.res', G.dist) : G.mode === 'career' ? T('res.career', G.tappa, T('tappa.' + G.tappa)) : T('res.single', save.track === 'garda' ? T('track.garda') + ' · ' : '', G.dist);
     $('rAv').src = PILOTS[save.pilot];
@@ -1135,7 +1136,7 @@
     let act = G.mode === 'online' ? '<button class="btn primary" data-act="onBack" type="button">' + T('on.back') + '</button>' : '<button class="btn primary" data-act="rematch" type="button">' + T('res.rematch') + '</button>';
     if (G.mode === 'career' && pos === 1 && G.tappa < 6) act = '<button class="btn primary" data-act="next" type="button">' + T('res.next', G.tappa + 1) + '</button><button class="btn" data-act="rematch" type="button">' + T('res.rematch2') + '</button>';
     if (G.mode === 'career' && pos === 1 && G.tappa === 6) $('rSub').textContent += T('res.done');
-    if (solo && (save.soloBest || {})[G.lightTrack + '_' + G.dist]) act += '<button class="btn primary" data-act="share" type="button">📤 ' + T('share.btn') + '</button>';
+    if (solo && p.finished) act += '<button class="btn primary" data-act="share" type="button">📤 ' + T('share.btn') + '</button>';
     if (G.mode !== 'online') act += '<button class="btn" data-act="garage" type="button">' + T('menu.garage') + '</button>' + (G.mode === 'career' ? '<button class="btn" data-act="career" type="button">' + T('res.rounds') + '</button>' : '') + '<button class="btn ghost" data-act="menu" type="button">' + T('common.menu') + '</button>';
     $('rActions').innerHTML = act;
     showScreen('scrResults');

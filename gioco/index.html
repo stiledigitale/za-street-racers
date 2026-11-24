@@ -778,7 +778,7 @@ const I18N = {
   'res.soloNew': ["NUOVO RECORD PERSONALE!", "NEW PERSONAL BEST!", "NEUE BESTZEIT!", "¡NUEVO RÉCORD PERSONAL!", "NOUVEAU RECORD PERSO !"],
   'res.soloBest': ["Il tuo record: {0} s", "Your best: {0} s", "Deine Bestzeit: {0} s", "Tu récord: {0} s", "Ton record : {0} s"],
   'share.btn': ["CONDIVIDI IL TEMPO", "SHARE YOUR TIME", "ZEIT TEILEN", "COMPARTIR TIEMPO", "PARTAGER LE TEMPS"],
-  'share.best': ["MIGLIOR TEMPO", "BEST TIME", "BESTZEIT", "MEJOR TIEMPO", "MEILLEUR TEMPS"],
+  'share.best': ["IL MIO TEMPO", "MY TIME", "MEINE ZEIT", "MI TIEMPO", "MON TEMPS"],
   'share.text': ["Ho fatto {0} s sui {1} m di {2} in ZA Street Racers! Riesci a battermi?", "I did {0} s on the {1} m at {2} in ZA Street Racers! Can you beat me?", "Ich habe {0} s auf {1} m bei {2} in ZA Street Racers geschafft! Schaffst du mehr?", "¡Hice {0} s en los {1} m de {2} en ZA Street Racers! ¿Me ganas?", "J'ai fait {0} s sur {1} m à {2} dans ZA Street Racers ! Tu me bats ?"],
   'share.saved': ["Immagine salvata: pubblicala dove vuoi!", "Image saved: post it anywhere!", "Bild gespeichert: poste es, wo du willst!", "Imagen guardada: ¡publícala donde quieras!", "Image enregistrée : publie-la où tu veux !"],
   'splash.tap': ["TOCCA PER GIOCARE", "TAP TO PLAY", "TIPPEN ZUM SPIELEN", "TOCA PARA JUGAR", "TOUCHE POUR JOUER"],
@@ -1161,8 +1161,8 @@ const SIM = (function () {
        4a e 5a un po' più lunghe e una sesta di riposo con margine, che si allunga con la potenza delle elaborazioni */
     const red0 = car.baseRed || car.redline, tm = car.topMul || 1;
     const k = 2 * Math.PI * car.rw / 60, sc = red0 - 950, r = [];
-    for (let i = 0; i < 5; i++) r.push(sc * k / (car.vs[i] * (i === 3 ? 1.03 : i === 4 ? 1.06 : 1) * (i >= 3 ? Math.pow(tm, 0.6) : 1) / 3.6));
-    r.push(red0 * k / (car.top * 1.12 * tm / 3.6));
+    for (let i = 0; i < 5; i++) r.push(sc * k / (car.vs[i] * (i === 3 ? 1.04 : i === 4 ? 1.11 : 1) * (i >= 3 ? Math.pow(tm, 0.6) : 1) / 3.6));
+    r.push(red0 * k / (car.top * 1.2 * tm / 3.6));
     car._r = r; return r;
   }
   function torqueAt(car, rpm) {
@@ -4342,7 +4342,8 @@ const RENDER = (function () {
   /* ---------- immagine da condividere: copertina, miglior tempo e nickname ---------- */
   const COVER = new Image(); COVER.src = COVER_ART;
   async function shareTime() {
-    const track = G.lightTrack || save.track, dist = G.dist || 402, t = (save.soloBest || {})[track + '_' + dist]; if (!t) return;
+    /* si condivide il tempo appena fatto */
+    const p = G.player, track = G.lightTrack || save.track, dist = G.dist || 402, t = p && p.finished ? p.finishTime : 0; if (!t) return;
     const nick = pilotName(save.pilot) || 'Pilota', tname = T('track.' + track), url = 'https://za-street-racers.pages.dev';
     const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 900; const c = cv.getContext('2d');
     if (COVER.complete && COVER.width) c.drawImage(COVER, 0, 0, 1600, 900);
@@ -4813,7 +4814,7 @@ const RENDER = (function () {
       }
     }
     let soloNew = false;
-    if (solo && p.finished) { save.soloBest = save.soloBest || {}; const sk = G.lightTrack + '_' + G.dist; if (!save.soloBest[sk] || p.finishTime < save.soloBest[sk]) { save.soloBest[sk] = p.finishTime; soloNew = true; } }
+    if (solo && p.finished) { save.soloBest = save.soloBest || {}; if (!save.soloV2) { save.soloBest = {}; save.soloV2 = true; } const sk = G.lightTrack + '_' + G.dist; if (!save.soloBest[sk] || p.finishTime < save.soloBest[sk]) { save.soloBest[sk] = p.finishTime; soloNew = true; } }
     persist();
     $('rKicker').textContent = solo ? T('res.solo', G.lightTrack === 'garda' ? T('track.garda') + ' · ' : '', G.dist) : G.mode === 'online' ? T('on.res', G.dist) : G.mode === 'career' ? T('res.career', G.tappa, T('tappa.' + G.tappa)) : T('res.single', save.track === 'garda' ? T('track.garda') + ' · ' : '', G.dist);
     $('rAv').src = PILOTS[save.pilot];
@@ -4844,7 +4845,7 @@ const RENDER = (function () {
     let act = G.mode === 'online' ? '<button class="btn primary" data-act="onBack" type="button">' + T('on.back') + '</button>' : '<button class="btn primary" data-act="rematch" type="button">' + T('res.rematch') + '</button>';
     if (G.mode === 'career' && pos === 1 && G.tappa < 6) act = '<button class="btn primary" data-act="next" type="button">' + T('res.next', G.tappa + 1) + '</button><button class="btn" data-act="rematch" type="button">' + T('res.rematch2') + '</button>';
     if (G.mode === 'career' && pos === 1 && G.tappa === 6) $('rSub').textContent += T('res.done');
-    if (solo && (save.soloBest || {})[G.lightTrack + '_' + G.dist]) act += '<button class="btn primary" data-act="share" type="button">📤 ' + T('share.btn') + '</button>';
+    if (solo && p.finished) act += '<button class="btn primary" data-act="share" type="button">📤 ' + T('share.btn') + '</button>';
     if (G.mode !== 'online') act += '<button class="btn" data-act="garage" type="button">' + T('menu.garage') + '</button>' + (G.mode === 'career' ? '<button class="btn" data-act="career" type="button">' + T('res.rounds') + '</button>' : '') + '<button class="btn ghost" data-act="menu" type="button">' + T('common.menu') + '</button>';
     $('rActions').innerHTML = act;
     showScreen('scrResults');
