@@ -339,39 +339,33 @@ html.pt #corner { top: auto; bottom: auto; top: calc(56.25cqw + 2cqw); right: 3c
 html.pt #corner.on { display: none; }
 html.pt.racing #corner.on { display: flex; top: 2cqw; left: 3cqw; right: auto; }
 html.pt #btnPause { width: 12cqw; }
-/* menu in verticale: colonna a griglia, scena di sfondo in alto */
-html.pt #scrMenu.on { display: grid; grid-template-columns: 1fr 1fr; align-content: space-between; gap: 3cqw; padding: 0 3cqw 3cqw; overflow: hidden; background: linear-gradient(to bottom, rgba(13,10,18,0) 0, rgba(13,10,18,0) 30cqw, rgba(13,10,18,0.92) 56cqw, #0d0a14 64cqw); }
+/* menu in verticale: righe proporzionate all'altezza, nulla esce dallo schermo */
+html.pt #scrMenu.on { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 2.1fr) auto; gap: min(2.4cqw, 1.3cqh); padding: 0 3cqw min(3cqw, 2cqh) !important; overflow: hidden; background: linear-gradient(to bottom, rgba(13,10,18,0) 0, rgba(13,10,18,0) 30cqw, rgba(13,10,18,0.92) 56cqw, #0d0a14 64cqw); }
 html.pt #scrMenu > * { position: static; width: auto; transform: none; margin: 0; }
-html.pt .mtop, html.pt .mlogo, html.pt .mtrack, html.pt .mbtns { height: auto; }
-html.pt .mtop { grid-column: 1 / -1; flex-wrap: wrap; justify-content: flex-start; gap: 1.6cqw; padding: 2cqw 15cqw 2cqw 3cqw; margin: 0 -3cqw !important; }
-html.pt .mtop { font-size: 2.9cqw; row-gap: 1.6cqw; height: auto; background: rgba(28,23,38,0.92); }
+html.pt .mtop { grid-column: 1 / -1; order: 0; flex-wrap: wrap; gap: 1.4cqw; row-gap: 1.4cqw; padding: 1.8cqw 14cqw 1.8cqw 3cqw; margin: 0 -3cqw !important; height: auto; font-size: 2.8cqw; background: rgba(28,23,38,0.92); }
 html.pt .mtop > * { margin-left: 0 !important; }
-html.pt .mpilot, html.pt .mmusic, html.pt .mtop .gcash { height: 8.5cqw; } html.pt .mcar { font-size: 3.4cqw; max-width: 30cqw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html.pt .mzad { order: 9; height: 8cqw; } html.pt .msoc { order: 10; }
-html.pt .mpilot .av { width: 7.5cqw; height: 7.5cqw; }
-html.pt .mzad { font-size: 3cqw; padding: 0 2cqw; border-radius: 2cqw; }
-html.pt .msoc { gap: 1.4cqw; } html.pt .msoc a { width: 8cqw; height: 8cqw; } html.pt .msoc a.web { font-size: 2.8cqw; line-height: 7cqw; }
-html.pt .mlang, html.pt .mmusic, html.pt .mtop .gcash { font-size: 3.4cqw; }
-html.pt .mtop .gcash, html.pt #scrMenu .gcash { position: static; height: 8.5cqw; }
-html.pt .mlang .lcur { height: 8.5cqw; }
-html.pt #scrMenu .mlogo h1 { font-size: 8.4cqw !important; }
-html.pt .mlogo { grid-column: 1 / -1; padding-top: 2cqw; min-height: 30cqw; }
-html.pt .mlogo h1 { font-size: 8.4cqw; } html.pt .mlogo p { font-size: 3.6cqw; white-space: normal !important; max-width: none; text-shadow: 0 0.3cqw 0 #14111c; }
-html.pt .mgo { grid-column: 1 / -1; order: 2; height: 28cqw; font-size: 4cqw; }
-html.pt .msolo, html.pt .monline { order: 3; height: 21cqw; font-size: 3.4cqw; }
-html.pt .mbtns { grid-column: 1 / -1; order: 4; display: grid; grid-template-columns: 1fr 1fr; gap: 2.4cqw; }
-html.pt .mb { height: 22cqw; font-size: 3.4cqw; }
-html.pt .mtrack { grid-column: 1 / -1; order: 5; flex-wrap: wrap; justify-content: center; gap: 2cqw; font-size: 3.4cqw; }
+html.pt .mpilot, html.pt .mmusic, html.pt .mtop .gcash, html.pt #scrMenu .gcash, html.pt .mlang .lcur { height: 8cqw; }
+html.pt .mpilot .av { width: 7cqw; height: 7cqw; }
+html.pt .mcar { font-size: 3.2cqw; max-width: 28cqw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.pt .mlang, html.pt .mmusic, html.pt .mtop .gcash, html.pt #scrMenu .gcash { font-size: 3.2cqw; position: static; }
+html.pt .mzad { order: 9; height: 7.5cqw; font-size: 2.9cqw; padding: 0 2cqw; border-radius: 2cqw; }
+html.pt .msoc { order: 10; gap: 1.3cqw; } html.pt .msoc a { width: 7.5cqw; height: 7.5cqw; } html.pt .msoc a.web { font-size: 2.6cqw; line-height: 6.6cqw; }
+html.pt .mlogo { grid-column: 1 / -1; order: 1; height: auto; padding-top: 1cqw; }
+html.pt #scrMenu .mlogo h1 { font-size: min(7.6cqw, 4.2cqh) !important; } html.pt .mlogo p { font-size: min(3.4cqw, 1.9cqh); white-space: normal !important; max-width: none; text-shadow: 0 0.3cqw 0 #14111c; }
+html.pt #scrMenu .gbtn { height: 100%; min-height: 0; max-height: 26cqw; font-size: min(3.3cqw, 1.8cqh); align-self: stretch; }
+html.pt .mgo { grid-column: 1 / -1; order: 2; } html.pt .mgo b { font-size: 2.4em; }
+html.pt .msolo, html.pt .monline { order: 3; }
+html.pt .mbtns { grid-column: 1 / -1; order: 4; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: min(2.4cqw, 1.3cqh); height: 100%; min-height: 0; }
+html.pt .mb b { font-size: 1.4em; }
+html.pt .mtrack { grid-column: 1 / -1; order: 5; height: auto; flex-wrap: wrap; justify-content: center; gap: 1.6cqw; font-size: min(3.2cqw, 1.8cqh); }
 html.pt .mtrack .mhow { margin-left: 0; }
 html.pt #scrMenu .keys { display: none; }
-html.pt .mlogo { order: 1; } html.pt .mtop { order: 0; }
 html.pt .mfull { top: 2cqw; right: 3cqw; width: 10cqw; height: 10cqw; font-size: 4.5cqw; }
 html.pt #netCount { top: 13.5cqw; right: 3cqw; font-size: 3cqw; }
 html.pt .sgpanel { position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%,-50%) !important; width: 88cqw !important; font-size: 4cqw; }
 html.pt #rotate { display: none !important; }
-html.pt #splash .spbar, html.pt #splash .sptap { left: 10cqw; width: 80cqw; } html.pt #splash .spbar { height: 4cqw; bottom: 12cqw; border-width: 0.6cqw; } html.pt #splash .sptap { bottom: 18cqw; font-size: 6cqw; }
-html.pt #splash { background: linear-gradient(#ff6fb5, #7a3fd0 55%, #1a0f2a); }
-html.pt #splash img { object-fit: contain; object-position: center 38%; filter: drop-shadow(0 2cqw 4cqw rgba(0,0,0,0.5)); }
+html.pt #splash .spbar, html.pt #splash .sptap { left: 10cqw; width: 80cqw; } html.pt #splash .spbar { height: 4cqw; top: 47.5cqh; bottom: auto; border-width: 0.6cqw; } html.pt #splash .sptap { top: 41.5cqh; bottom: auto; font-size: 6.5cqw; }
+html.pt #splash img { object-fit: cover; object-position: center bottom; }
 /* schermate secondarie in verticale: testo più grande, colonne singole */
 html.pt .screen { padding: 4cqw 4cqw 4cqw !important; font-size: 3.4cqw; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 html.pt .screen h2 { font-size: 6.4cqw !important; }

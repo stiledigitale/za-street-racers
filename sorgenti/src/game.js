@@ -772,7 +772,8 @@
   (function splash() {
     const sp = $('splash'); if (!sp) return;
     if (navigator.webdriver && !/splash=1/.test(location.search)) { sp.remove(); return; }
-    $('splashImg').src = COVER_ART;
+    const setCov = () => { $('splashImg').src = PTQ.matches && typeof COVER_PT !== 'undefined' ? COVER_PT : COVER_ART; };
+    setCov(); try { PTQ.addEventListener('change', setCov); } catch (e) { }
     /* la copertina parte solo dopo la schermata "gira il telefono": in verticale la barra resta ferma a zero */
     let v = 0; const tick = setInterval(() => {
       v = Math.min(100, v + 3 + Math.random() * 9); $('spFill').style.width = v + '%';
