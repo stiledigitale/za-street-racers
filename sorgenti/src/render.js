@@ -1613,6 +1613,9 @@ const RENDER = (function () {
       }
     }
 
+    drawMsg(c, st);
+  }
+  function drawMsg(c, st) {
     /* messaggio grande */
     if (st.msg && st.msg.t > 0) {
       const a = Math.min(1, st.msg.t / 0.25), s = 1 + (1 - Math.min(1, (st.msg.d - st.msg.t) / 0.12)) * 0.3;
@@ -1624,6 +1627,61 @@ const RENDER = (function () {
       if (st.msg.sub) { c.font = fd(800, 26); c.lineWidth = 7; c.strokeText(st.msg.sub, 0, 52); c.fillStyle = '#fff6e8'; c.fillText(st.msg.sub, 0, 52); }
       c.restore();
     }
+  }
+
+  /* ================= CRUSCOTTO IN VERTICALE =================
+     sotto la scena: posizione, tempo, mini pista, semaforo, contagiri grande, nitro; in basso resta spazio per GAS e NITRO */
+  function drawHudPortrait(c, st, w, h) {
+    const p = st.player; c.clearRect(0, 0, w, h);
+    const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#1d1733'); bg.addColorStop(1, '#0d0a14'); c.fillStyle = bg; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#ff2e7e'; c.fillRect(0, 0, w, 6);
+    /* posizione e tempo */
+    skewPanel(c, 24, 24, 170, 110, 16, '#ffd23f');
+    c.fillStyle = INK; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = fd(900, 70); c.fillText(st.pos + '°', 106, 68);
+    c.font = fd(800, 18); c.fillText(TX('hud.ofN', st.racers.length), 104, 116);
+    c.textAlign = 'right'; c.fillStyle = '#fff6e8'; c.font = fd(900, 84); c.fillText((p.finished ? p.finishTime : p.time).toFixed(3), w - 24, 72);
+    c.font = fd(800, 24); c.fillStyle = '#b4a9dc'; c.fillText(TX('hud.secs', Math.round(p.v * 3.6)), w - 28, 122);
+    /* mini pista */
+    const tx = 40, tw = w - 90, ty = 176;
+    rrect(c, tx, ty - 7, tw, 14, 7); inked(c, '#2a2148', 3);
+    for (let k = 0; k < 4; k++) { c.fillStyle = k % 2 ? '#fff6e8' : INK; c.fillRect(tx + tw - 10, ty - 12 + k * 6, 10, 6); }
+    st.racers.forEach(r => {
+      const f = Math.min(1, RX(r) / st.dist), me = r === p;
+      c.beginPath(); c.arc(tx + f * tw, ty - (r.lane - 1.5) * 3, me ? 14 : 10, 0, TAU); inked(c, r.paint, me ? 4 : 3);
+      if (me) { c.fillStyle = INK; c.font = fd(900, 14); c.textAlign = 'center'; c.fillText(TX('hud.you'), tx + f * tw, ty - (r.lane - 1.5) * 3 + 1, 30); }
+    });
+    /* semaforo, stato, motore */
+    const ph2 = st.phase, ly = 240;
+    for (let i = 0; i < 3; i++) {
+      let col = '#3a3150';
+      if (ph2 === 'stage' && i === 0) col = '#ffb22a';
+      if (ph2 === 'red') col = st.redLit ? '#ff3b28' : '#5a1a14';
+      if (ph2 === 'race' || ph2 === 'finish') col = '#3cf07a';
+      c.beginPath(); c.arc(48 + i * 52, ly, 20, 0, TAU); inked(c, col, 4);
+    }
+    c.textAlign = 'left'; c.font = fd(800, 24); c.fillStyle = '#b4a9dc';
+    c.fillText(ph2 === 'stage' ? TX('race.ready') : ph2 === 'red' ? TX('hud.red') : TX('hud.green'), 196, ly, w - 420);
+    const hx = w - 230, hw = 200;
+    c.fillText(TX('hud.engine', Math.round(p.health)), hx, ly - 22, hw);
+    rrect(c, hx, ly - 4, hw, 18, 5); inked(c, '#2a2148', 3);
+    if (p.health > 0) { rrect(c, hx + 2, ly - 2, (hw - 4) * p.health / 100, 14, 4); c.fillStyle = p.health > 60 ? '#3cf07a' : p.health > 40 ? '#ffd23f' : '#ff4b3e'; c.fill(); }
+    /* nitro, sotto il semaforo */
+    if (typeof SIM !== 'undefined' && SIM.nitroLeft && NUI && okImg(NUI.frame) && okImg(NUI.bottle) && okImg(NUI.fill)) {
+      const nl = SIM.nitroLeft(p), ny = 300, bh = 54, bw = NUI.bottle.width * bh / NUI.bottle.height, fw = 420, nx = (w - fw - bw) / 2;
+      c.drawImage(NUI.bottle, nx, ny - bh / 2, bw, bh);
+      const fx = nx + bw + 6, fh = NUI.frame.height * fw / NUI.frame.width, fy = ny - fh / 2, inn = NITRO_UI.inner;
+      c.drawImage(NUI.frame, fx, fy, fw, fh);
+      if (nl > 0) { c.save(); if (p.nitroT > 0) c.globalAlpha = 0.65 + 0.35 * Math.abs(Math.sin(performance.now() / 60)); c.drawImage(NUI.fill, fx + inn[0] * fw, fy + inn[1] * fh, (inn[2] - inn[0]) * fw * nl, (inn[3] - inn[1]) * fh); c.restore(); }
+    }
+    /* contagiri grande: tra la nitro e i pulsanti in basso */
+    const top = 345, bottom = h - 370, R = Math.max(100, Math.min(260, (bottom - top - 50) / 2)), cy = top + R + 6;
+    tach(c, w / 2, cy, R, st);
+    /* ultima cambiata */
+    let ql = '', qc = '#b4a9dc';
+    if (p.blown) { ql = TX('race.blown'); qc = '#ff4b3e'; }
+    else if (p.shifts.length) { const l = p.shifts[p.shifts.length - 1]; ql = TX('hud.last', Q_LABEL[l.q]); qc = Q_COLOR[l.q]; }
+    else if (p.launch) { ql = TX('race.launch', Q_LABEL[p.launch.q]); qc = Q_COLOR[p.launch.q]; }
+    c.textAlign = 'center'; c.font = fd(900, 30); c.fillStyle = qc; c.fillText(ql, w / 2, cy + R + 32, w - 60);
   }
 
   /* ================= FOTOGRAMMA ================= */
@@ -1701,7 +1759,7 @@ const RENDER = (function () {
     /* grana della carta su tutta la scena, ferma come in un'illustrazione */
     if (!PAPER) { PAPER = mk(W, H); const pc = PAPER.getContext('2d'); pc.fillStyle = pc.createPattern(noiseTex(), 'repeat'); pc.fillRect(0, 0, W, H); }
     /* grana di carta sulla scena tolta: grafica pulita */
-    if (st.hud) drawHud(ctx, st);
+    if (st.hud === 'pt') drawMsg(ctx, st); else if (st.hud) drawHud(ctx, st);
   }
 
   function carFrame(id, o) {
@@ -1710,5 +1768,5 @@ const RENDER = (function () {
     return { x0: o.x - sp.front * k, y0: o.y - (sp.ground - drop) * k, k: k };
   }
   function setRS(k) { if (Math.abs(k - RS) < 0.01) return; RS = k; if (T) setScene(ENV, LIGHT); }
-  return { setRS, get RS() { return RS; }, carFrame, stickerBoxes, RIMS, RIMS_SERIE: id => { const sp = SP[CARMAP[id][0]]; return sp && sp.wheels[0].img; }, W, H, PPM, CK, INK, wash, noiseTex, setScene, PAL, SHAPES, ready, versions, setLight, frame, drawCar, puff, stepParts, clearParts, laneY, laneS, Q_COLOR, Q_LABEL, shade, rrect, inked, fd, get night() { return P.night; } };
+  return { setRS, get RS() { return RS; }, carFrame, stickerBoxes, RIMS, RIMS_SERIE: id => { const sp = SP[CARMAP[id][0]]; return sp && sp.wheels[0].img; }, W, H, PPM, CK, INK, wash, noiseTex, setScene, PAL, SHAPES, ready, versions, setLight, frame, drawCar, puff, stepParts, clearParts, laneY, laneS, Q_COLOR, Q_LABEL, shade, rrect, inked, fd, get night() { return P.night; }, drawHudPortrait };
 })();

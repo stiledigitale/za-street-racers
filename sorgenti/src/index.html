@@ -325,7 +325,94 @@ td.r, th.r { text-align: right; }
 #rotate .ph { width: 3.2em; height: 5.4em; border: 0.2em solid var(--fg); border-radius: 0.6em; background: var(--card); box-shadow: 0.12em 0.15em 0 var(--ink); animation: turn 2.2s ease-in-out infinite; }
 #rotate small { font-family: var(--f-b); font-style: normal; font-weight: 600; font-size: 0.6em; text-transform: none; color: var(--muted); max-width: 18em; }
 @keyframes turn { 0%, 25% { transform: rotate(0); } 55%, 100% { transform: rotate(-90deg); } }
-@media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+/* ===== verticale: scena 16:9 in alto, sotto cruscotto e comandi; menu ridisposti in colonna ===== */
+#cvP { display: none; }
+html.pt body { align-items: stretch; }
+html.pt #stage { width: 100vw; height: 100vh; height: 100dvh; aspect-ratio: auto; max-height: none; font-size: max(11px, 3.3cqw); background: #0d0a14; }
+html.pt #cv { inset: 0 0 auto 0; height: 56.25cqw; }
+html.pt.racing #cvP { display: block; position: absolute; left: 0; right: 0; top: 56.25cqw; bottom: 0; width: 100%; height: calc(100cqh - 56.25cqw); }
+html.pt #touch { padding: 0 4cqw 5cqw; }
+html.pt #touch.on { justify-content: space-between; }
+html.pt #touch .imgbtn { width: 46cqw; }
+html.pt .nitrobtn { width: 30cqw; height: 30cqw; font-size: 5.5cqw; margin: 0 0 4cqw 2cqw; }
+html.pt #corner { top: auto; bottom: auto; top: calc(56.25cqw + 2cqw); right: 3cqw; flex-direction: row; display: none; }
+html.pt #corner.on { display: none; }
+html.pt.racing #corner.on { display: flex; top: 2cqw; left: 3cqw; right: auto; }
+html.pt #btnPause { width: 12cqw; }
+/* menu in verticale: colonna a griglia, scena di sfondo in alto */
+html.pt #scrMenu.on { display: grid; grid-template-columns: 1fr 1fr; align-content: space-between; gap: 3cqw; padding: 0 3cqw 3cqw; overflow: hidden; background: linear-gradient(to bottom, rgba(13,10,18,0) 0, rgba(13,10,18,0) 30cqw, rgba(13,10,18,0.92) 56cqw, #0d0a14 64cqw); }
+html.pt #scrMenu > * { position: static; width: auto; transform: none; margin: 0; }
+html.pt .mtop, html.pt .mlogo, html.pt .mtrack, html.pt .mbtns { height: auto; }
+html.pt .mtop { grid-column: 1 / -1; flex-wrap: wrap; justify-content: flex-start; gap: 1.6cqw; padding: 2cqw 15cqw 2cqw 3cqw; margin: 0 -3cqw !important; }
+html.pt .mtop { font-size: 2.9cqw; row-gap: 1.6cqw; height: auto; background: rgba(28,23,38,0.92); }
+html.pt .mtop > * { margin-left: 0 !important; }
+html.pt .mpilot, html.pt .mmusic, html.pt .mtop .gcash { height: 8.5cqw; } html.pt .mcar { font-size: 3.4cqw; max-width: 30cqw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.pt .mzad { order: 9; height: 8cqw; } html.pt .msoc { order: 10; }
+html.pt .mpilot .av { width: 7.5cqw; height: 7.5cqw; }
+html.pt .mzad { font-size: 3cqw; padding: 0 2cqw; border-radius: 2cqw; }
+html.pt .msoc { gap: 1.4cqw; } html.pt .msoc a { width: 8cqw; height: 8cqw; } html.pt .msoc a.web { font-size: 2.8cqw; line-height: 7cqw; }
+html.pt .mlang, html.pt .mmusic, html.pt .mtop .gcash { font-size: 3.4cqw; }
+html.pt .mtop .gcash, html.pt #scrMenu .gcash { position: static; height: 8.5cqw; }
+html.pt .mlang .lcur { height: 8.5cqw; }
+html.pt #scrMenu .mlogo h1 { font-size: 8.4cqw !important; }
+html.pt .mlogo { grid-column: 1 / -1; padding-top: 2cqw; min-height: 30cqw; }
+html.pt .mlogo h1 { font-size: 8.4cqw; } html.pt .mlogo p { font-size: 3.6cqw; white-space: normal !important; max-width: none; text-shadow: 0 0.3cqw 0 #14111c; }
+html.pt .mgo { grid-column: 1 / -1; order: 2; height: 28cqw; font-size: 4cqw; }
+html.pt .msolo, html.pt .monline { order: 3; height: 21cqw; font-size: 3.4cqw; }
+html.pt .mbtns { grid-column: 1 / -1; order: 4; display: grid; grid-template-columns: 1fr 1fr; gap: 2.4cqw; }
+html.pt .mb { height: 22cqw; font-size: 3.4cqw; }
+html.pt .mtrack { grid-column: 1 / -1; order: 5; flex-wrap: wrap; justify-content: center; gap: 2cqw; font-size: 3.4cqw; }
+html.pt .mtrack .mhow { margin-left: 0; }
+html.pt #scrMenu .keys { display: none; }
+html.pt .mlogo { order: 1; } html.pt .mtop { order: 0; }
+html.pt .mfull { top: 2cqw; right: 3cqw; width: 10cqw; height: 10cqw; font-size: 4.5cqw; }
+html.pt #netCount { top: 13.5cqw; right: 3cqw; font-size: 3cqw; }
+html.pt .sgpanel { position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%,-50%) !important; width: 88cqw !important; font-size: 4cqw; }
+html.pt #rotate { display: none !important; }
+html.pt #splash .spbar, html.pt #splash .sptap { left: 10cqw; width: 80cqw; } html.pt #splash .spbar { height: 4cqw; bottom: 12cqw; border-width: 0.6cqw; } html.pt #splash .sptap { bottom: 18cqw; font-size: 6cqw; }
+html.pt #splash { background: linear-gradient(#ff6fb5, #7a3fd0 55%, #1a0f2a); }
+html.pt #splash img { object-fit: contain; object-position: center 38%; filter: drop-shadow(0 2cqw 4cqw rgba(0,0,0,0.5)); }
+/* schermate secondarie in verticale: testo più grande, colonne singole */
+html.pt .screen { padding: 4cqw 4cqw 4cqw !important; font-size: 3.4cqw; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+html.pt .screen h2 { font-size: 6.4cqw !important; }
+html.pt .screen .spread { padding-right: 13cqw !important; align-items: flex-start; }
+html.pt .pilots { grid-template-columns: 1fr !important; }
+html.pt .pgrid { grid-template-columns: repeat(4, 1fr) !important; } html.pt .pc b { font-size: 2.6cqw; }
+html.pt .gi { font-size: 2.7cqw; }
+html.pt .pside { display: grid; grid-template-columns: 26cqw 1fr; gap: 0 3cqw; align-items: start; }
+html.pt .pside img { grid-row: 1 / 5; }
+html.pt .lbbox { columns: 1; height: auto; }
+html.pt .lbt { font-size: 3.6cqw; }
+html.pt .tappe { grid-template-columns: 1fr 1fr !important; }
+html.pt .onhome { grid-template-columns: 1fr; } html.pt .onjoin { grid-column: 1; }
+html.pt .onslots { grid-template-columns: 1fr 1fr; }
+html.pt .howbox { flex-direction: column; height: auto; gap: 3cqw; }
+html.pt #howCv { width: 100%; height: auto; }
+html.pt .howtxt { font-size: 4cqw; }
+html.pt #scrResults .res { grid-template-columns: 1fr !important; }
+html.pt #scrResults .actions { flex-wrap: wrap !important; }
+html.pt #scrResults { font-size: 3.4cqw !important; }
+/* garage in verticale */
+html.pt #scrGarage { font-size: 3.2cqw; padding: 0 !important; overflow: hidden; }
+html.pt .gtop { height: 14cqw; }
+html.pt .gback { left: 2cqw; top: 2.5cqw; height: 9cqw; width: 22cqw; font-size: 3.4cqw; }
+html.pt .gtitle { display: none; }
+html.pt .gpilot { left: 26cqw; top: 2.5cqw; height: 9cqw; font-size: 3.2cqw; } html.pt .gpilot .av { width: 8cqw; height: 8cqw; }
+html.pt #scrGarage .gcash { right: 15cqw; top: 2.5cqw; height: 9cqw; font-size: 3.6cqw; }
+html.pt .gstage { left: 2cqw; right: 2cqw; width: auto; top: 15cqw; height: 47cqw; }
+html.pt .gtabs { left: 2cqw; right: 2cqw; width: auto; top: 63cqw; bottom: auto; height: 15cqw; flex-direction: row; gap: 1cqw; }
+html.pt .gtab { margin: 0 !important; border: 0.2em solid var(--ink) !important; border-radius: 0.6em !important; font-size: 2.3cqw; }
+html.pt .gtab svg { height: 7cqw; }
+html.pt .gstrip { left: 2cqw; right: 2cqw; width: auto; top: 80cqw; height: 44cqw; }
+html.pt .gi { width: 27cqw; } html.pt .gi img { height: 13cqw; }
+html.pt .gi.sw { width: 15cqw; } html.pt .gi.sw i.dot { width: 10cqw; height: 10cqw; }
+html.pt .gi.narrow { width: 21cqw; }
+html.pt .gitems.two .gi.sw { width: 12cqw; } html.pt .gitems.two .gi.sw i.dot { width: 8cqw; height: 8cqw; }
+html.pt .gitems.two .gi.narrow { width: 19cqw; } html.pt .gitems.two .gi.reset { width: 24cqw; }
+html.pt .glabel { width: 14cqw; }
+html.pt .gstats { left: 2cqw; right: 2cqw; width: auto; top: 126cqw; bottom: 27cqw; height: auto; }
+html.pt #gStats { display: grid; grid-template-columns: 1fr 1fr; gap: 1cqw 4cqw; }
+html.pt .grace { left: 2cqw; right: 2cqw; width: auto; top: auto; bottom: 3cqw; height: 21cqw; font-size: 6cqw; }
 #btnFull { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .btn, .tile, .imgbtn { transition: none; } #rotate .ph { animation: none; } }
 @container (min-height: 0px) { .screen { padding: 1.4em 1.8em; } .brand h1 { font-size: 4em; } }
@@ -491,6 +578,7 @@ td.r, th.r { text-align: right; }
 </head>
 <body>
 <div id="stage">
+  <canvas id="cvP" aria-hidden="true"></canvas>
   <canvas id="cv" width="1280" height="720" aria-label="Pista di ZA Street Racers"></canvas>
 
   <div id="touch">

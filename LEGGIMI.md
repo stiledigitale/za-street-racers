@@ -52,3 +52,9 @@ Come Tactical Racing Simulator: **Supabase Realtime**, progetto `stiledigitale_g
 - "Condividi": sul telefono menu di condivisione con la copertina, sul computer pannello WhatsApp/Facebook/X/Telegram/Copia link.
 - Cambiata SUPER: linea verde flash al centro della zona (±4% della zona, minimo ±30 giri): cambiata più rapida e spinta 1,7 volte quella della perfetta.
 - Foto dei piloti uniformate: tutte con la testa alla stessa grandezza e posizione.
+
+## Verticale e orizzontale (25/11/2026)
+- Con il telefono in verticale il gioco si ridispone (classe `pt` su <html>, regole `html.pt ...` in index.html); in orizzontale resta tutto come prima.
+- Gara in verticale: scena 16:9 in alto, sotto il cruscotto grande disegnato su un secondo canvas (`cvP`, `RENDER.drawHudPortrait`): posizione, tempo, mini pista, semaforo, motore, nitro, contagiri grande e ultima cambiata; in basso NITRO e GAS grandi.
+- Menu, garage, piloti, classifica, carriera, online, come si gioca, risultati e copertina hanno la loro disposizione verticale.
+- Girando il telefono durante la gara il gioco va in pausa. La vecchia schermata "gira il telefono" non compare più.

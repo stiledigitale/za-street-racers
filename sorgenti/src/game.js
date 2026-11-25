@@ -5,6 +5,17 @@
 (function () {
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d');
+  /* telefono in verticale: scena in alto, cruscotto grande sotto (canvas cvP), comandi in basso */
+  const cvP = $('cvP'), ctxP = cvP.getContext('2d'), PTQ = matchMedia('(orientation: portrait)');
+  let PT = PTQ.matches, PTH = 1100, PTK = 1, lastRacing = false;
+  function fitP() {
+    const r = cvP.getBoundingClientRect(); if (!r.width) return;
+    PTK = Math.min(2, (r.width * (devicePixelRatio || 1)) / 720); PTH = Math.round(720 * r.height / r.width);
+    cvP.width = Math.round(720 * PTK); cvP.height = Math.round(PTH * PTK);
+  }
+  function applyPT() { PT = PTQ.matches; document.documentElement.classList.toggle('pt', PT); setTimeout(() => { fitCanvas(); fitP(); }, 30); }
+  PTQ.addEventListener ? PTQ.addEventListener('change', applyPT) : PTQ.addListener(applyPT);
+  document.documentElement.classList.toggle('pt', PT);
   /* canvas alla risoluzione vera dello schermo (fino a 2x): grafica nitida anche sui telefoni */
   /* qualità automatica: si parte dalla risoluzione dello schermo (iPhone al massimo 1,5x) e, se il telefono non
      regge 50 fotogrammi al secondo, si scende a passi fino a 1x. La scelta resta salvata per le volte dopo. */
@@ -31,7 +42,7 @@
       }
     }
   }
-  addEventListener('resize', () => setTimeout(fitCanvas, 60));
+  addEventListener('resize', () => setTimeout(() => { fitCanvas(); fitP(); }, 60));
   const CAR = id => SIM.CARS.find(c => c.id === id) || SIM.CARS[0];
 
   /* ---------- salvataggio locale (facoltativo: il gioco funziona anche senza) ---------- */
@@ -209,7 +220,8 @@
     scene(save.track, save.light); attract = null;
     document.querySelectorAll('#trackSeg button').forEach(x => x.classList.toggle('on', x.dataset.t === save.track));
   });
-  try { matchMedia('(orientation: portrait) and (pointer: coarse)').addEventListener('change', e => { if (e.matches && isRacing() && !G.paused) togglePause(); }); } catch (e) { }
+  /* girando il telefono durante la gara si va in pausa, così si riprende con calma nella nuova disposizione */
+  try { PTQ.addEventListener('change', () => { if (isRacing() && !G.paused) togglePause(); }); } catch (e) { }
 
   function startRace(mode, tappa, reuse) {
     if (touchSeen) goFull();
@@ -395,6 +407,7 @@
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     perfFrame(dt); musicFrame();
+    const rc = isRacing(); if (rc !== lastRacing) { lastRacing = rc; document.documentElement.classList.toggle('racing', rc); if (rc && PT) setTimeout(fitP, 30); }
     if (isRacing()) {
       if (!G.paused) {
         acc += dt;
@@ -404,7 +417,9 @@
       }
       audioFrame();
       ctx.setTransform(CK2, 0, 0, CK2, 0, 0);
-      RENDER.frame(ctx, { crowd: cheerFrame(dt, G.camX, G.dist, false), camX: G.camX, phase: G.phase, redLit: G.redLit, racers: G.racers, player: G.player, dist: G.dist, hud: true, lz: G.lz, sz: G.sz, msg: G.msg, pos: G.pos, leadGap: G.leadGap });
+      const stF = { crowd: cheerFrame(dt, G.camX, G.dist, false), camX: G.camX, phase: G.phase, redLit: G.redLit, racers: G.racers, player: G.player, dist: G.dist, hud: PT ? 'pt' : true, lz: G.lz, sz: G.sz, msg: G.msg, pos: G.pos, leadGap: G.leadGap };
+      RENDER.frame(ctx, stF);
+      if (PT) { if (cvP.width < 10) fitP(); ctxP.setTransform(PTK, 0, 0, PTK, 0, 0); RENDER.drawHudPortrait(ctxP, stF, 720, PTH); }
     } else if (G.phase === 'results') {
       acc += dt;
       /* anche sotto la classifica le auto continuano: frenano, scalano e si fermano, poi il motore si spegne */
@@ -759,9 +774,7 @@
     if (navigator.webdriver && !/splash=1/.test(location.search)) { sp.remove(); return; }
     $('splashImg').src = COVER_ART;
     /* la copertina parte solo dopo la schermata "gira il telefono": in verticale la barra resta ferma a zero */
-    const portrait = matchMedia('(orientation: portrait) and (pointer: coarse)');
     let v = 0; const tick = setInterval(() => {
-      if (portrait.matches) { v = 0; $('spFill').style.width = '0%'; return; }
       v = Math.min(100, v + 3 + Math.random() * 9); $('spFill').style.width = v + '%';
       if (v >= 100) { clearInterval(tick); sp.classList.add('ready'); }
     }, 110);
