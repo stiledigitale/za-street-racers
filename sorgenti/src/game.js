@@ -202,7 +202,8 @@
     if (!rq || document.fullscreenElement || document.webkitFullscreenElement) return;
     try {
       const pr = rq.call(el);
-      const lock = () => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => { }); } catch (e) { } };
+      /* resta nell'orientamento in cui si sta giocando: verticale o orizzontale */
+      const lock = () => { try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock(matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape').catch(() => { }); } catch (e) { } };
       if (pr && pr.then) pr.then(lock).catch(() => { }); else lock();
     } catch (e) { }
   }
