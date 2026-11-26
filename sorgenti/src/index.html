@@ -364,8 +364,10 @@ html.pt .mfull { top: 2cqw; right: 3cqw; width: 10cqw; height: 10cqw; font-size:
 html.pt #netCount { top: 13.5cqw; right: 3cqw; font-size: 3cqw; }
 html.pt .sgpanel { position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%,-50%) !important; width: 88cqw !important; font-size: 4cqw; }
 html.pt #rotate { display: none !important; }
-html.pt #splash .spbar, html.pt #splash .sptap { left: 10cqw; width: 80cqw; } html.pt #splash .spbar { height: 4cqw; top: 47.5cqh; bottom: auto; border-width: 0.6cqw; } html.pt #splash .sptap { top: 41.5cqh; bottom: auto; font-size: 6.5cqw; }
-html.pt #splash img { object-fit: cover; object-position: center bottom; }
+html.pt #splash .spbar, html.pt #splash .sptap { left: 10cqw; width: 80cqw; } html.pt #splash .spbar { height: 4cqw; top: auto; bottom: 7cqh; border-width: 0.6cqw; } html.pt #splash .sptap { display: none; }
+html.pt #splash.ready::after { content: ''; position: absolute; left: 12cqw; right: 12cqw; top: 76.5cqh; height: 13.5cqh; border-radius: 4cqw; box-shadow: 0 0 0 0.8cqw rgba(255,255,255,0.85), 0 0 6cqw 2cqw rgba(255,230,60,0.9); animation: spGlow 1s ease-in-out infinite; pointer-events: none; }
+@keyframes spGlow { 50% { opacity: 0.25; } }
+html.pt #splash img { object-fit: cover; object-position: center center; }
 /* schermate secondarie in verticale: testo più grande, colonne singole */
 html.pt .screen { padding: 4cqw 4cqw 4cqw !important; font-size: 3.4cqw; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 html.pt .screen h2 { font-size: 6.4cqw !important; }
