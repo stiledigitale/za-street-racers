@@ -339,10 +339,14 @@ html.pt #corner { top: auto; bottom: auto; top: calc(56.25cqw + 2cqw); right: 3c
 html.pt #corner.on { display: none; }
 html.pt.racing #corner.on { display: flex; top: 2cqw; left: 3cqw; right: auto; }
 html.pt #btnPause { width: 12cqw; }
-/* menu in verticale: righe proporzionate all'altezza, nulla esce dallo schermo */
-html.pt #scrMenu.on { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 2.1fr) auto; gap: min(2.4cqw, 1.3cqh); padding: 0 3cqw min(3cqw, 2cqh) !important; overflow: hidden; background: linear-gradient(to bottom, rgba(13,10,18,0) 0, rgba(13,10,18,0) 30cqw, rgba(13,10,18,0.92) 56cqw, #0d0a14 64cqw); }
+/* menu in verticale: dati in alto, sotto lo schieramento delle auto, menu compatto in basso */
+.mscene { display: none; }
+html.pt #cv { top: var(--sceneTop, 0px); }
+html.pt.racing #cv { top: 0; }
+html.pt #scrMenu.on { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(56.25cqw, 1fr) auto auto auto auto auto; gap: min(2cqw, 1cqh); padding: 0 3cqw min(3cqw, 2cqh) !important; overflow: hidden; background: none; }
 html.pt #scrMenu > * { position: static; width: auto; transform: none; margin: 0; }
-html.pt .mtop { grid-column: 1 / -1; order: 0; flex-wrap: wrap; gap: 1.4cqw; row-gap: 1.4cqw; padding: 1.8cqw 14cqw 1.8cqw 3cqw; margin: 0 -3cqw !important; height: auto; font-size: 2.8cqw; background: rgba(28,23,38,0.92); }
+html.pt .mscene { display: block; grid-column: 1 / -1; order: 1; pointer-events: none; align-self: stretch; height: auto; }
+html.pt .mtop { grid-column: 1 / -1; order: 0; flex-wrap: wrap; gap: 1.4cqw; row-gap: 1.4cqw; padding: 1.8cqw 14cqw 1.8cqw 3cqw; margin: 0 -3cqw !important; height: auto; font-size: 2.8cqw; background: #1c1726; border-bottom: 0.6cqw solid #14111c; }
 html.pt .mtop > * { margin-left: 0 !important; }
 html.pt .mpilot, html.pt .mmusic, html.pt .mtop .gcash, html.pt #scrMenu .gcash, html.pt .mlang .lcur { height: 8cqw; }
 html.pt .mpilot .av { width: 7cqw; height: 7cqw; }
@@ -350,14 +354,15 @@ html.pt .mcar { font-size: 3.2cqw; max-width: 28cqw; overflow: hidden; text-over
 html.pt .mlang, html.pt .mmusic, html.pt .mtop .gcash, html.pt #scrMenu .gcash { font-size: 3.2cqw; position: static; }
 html.pt .mzad { order: 9; height: 7.5cqw; font-size: 2.9cqw; padding: 0 2cqw; border-radius: 2cqw; }
 html.pt .msoc { order: 10; gap: 1.3cqw; } html.pt .msoc a { width: 7.5cqw; height: 7.5cqw; } html.pt .msoc a.web { font-size: 2.6cqw; line-height: 6.6cqw; }
-html.pt .mlogo { grid-column: 1 / -1; order: 1; height: auto; padding-top: 1cqw; }
-html.pt #scrMenu .mlogo h1 { font-size: min(7.6cqw, 4.2cqh) !important; } html.pt .mlogo p { font-size: min(3.4cqw, 1.9cqh); white-space: normal !important; max-width: none; text-shadow: 0 0.3cqw 0 #14111c; }
-html.pt #scrMenu .gbtn { height: 100%; min-height: 0; max-height: 26cqw; font-size: min(3.3cqw, 1.8cqh); align-self: stretch; }
-html.pt .mgo { grid-column: 1 / -1; order: 2; } html.pt .mgo b { font-size: 2.4em; }
-html.pt .msolo, html.pt .monline { order: 3; }
-html.pt .mbtns { grid-column: 1 / -1; order: 4; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: min(2.4cqw, 1.3cqh); height: 100%; min-height: 0; }
-html.pt .mb b { font-size: 1.4em; }
-html.pt .mtrack { grid-column: 1 / -1; order: 5; height: auto; flex-wrap: wrap; justify-content: center; gap: 1.6cqw; font-size: min(3.2cqw, 1.8cqh); }
+html.pt .mlogo { grid-column: 1 / -1; order: 2; height: auto; padding: 0; display: flex; align-items: center; justify-content: center; }
+html.pt #scrMenu .mlogo h1 { font-size: min(6.4cqw, 3.4cqh) !important; } html.pt .mlogo p { display: none; }
+html.pt #scrMenu .gbtn { min-height: 0; align-self: stretch; font-size: min(3cqw, 1.6cqh); }
+html.pt .mgo { grid-column: 1 / -1; order: 3; height: min(14cqw, 7.5cqh); } html.pt .mgo b { font-size: 2.1em; }
+html.pt .msolo, html.pt .monline { order: 4; height: min(11cqw, 6cqh); }
+html.pt .mbtns { grid-column: 1 / -1; order: 5; display: grid; grid-template-columns: 1fr 1fr; gap: min(2cqw, 1cqh); height: auto; }
+html.pt .mb { height: min(11cqw, 6cqh); } html.pt .mb b { font-size: 1.3em; } html.pt .mb span { display: none; }
+html.pt .msolo span, html.pt .monline span { display: none; }
+html.pt .mtrack { grid-column: 1 / -1; order: 6; height: auto; flex-wrap: wrap; justify-content: center; gap: 1.6cqw; font-size: min(3cqw, 1.7cqh); }
 html.pt .mtrack .mhow { margin-left: 0; }
 html.pt #scrMenu .keys { display: none; }
 html.pt .mfull { top: 2cqw; right: 3cqw; width: 10cqw; height: 10cqw; font-size: 4.5cqw; }
@@ -600,6 +605,7 @@ html.pt .grace { left: 2cqw; right: 2cqw; width: auto; top: auto; bottom: 3cqw; 
       <button class="mmusic" id="btnMusic" type="button" aria-label="Musica">♪ ON</button>
       <div class="gcash"><b>€</b><span id="menuCredits"></span></div>
     </div>
+    <div class="mscene" id="mScene"></div>
     <div class="brand mlogo">
       <h1 aria-label="ZA Street Racers"><span class="l1"><img id="zaLogo" class="za" alt="ZA"> STREET</span> <span class="l2">RACERS</span></h1>
       <p class="mtag" data-i18n="menu.tag">Una strada, un quarto di miglio, il tempo dipende da te!</p>
@@ -3905,6 +3911,17 @@ const RENDER = (function () {
     PTK = Math.min(2, (r.width * (devicePixelRatio || 1)) / 720); PTH = Math.round(720 * r.height / r.width);
     cvP.width = Math.round(720 * PTK); cvP.height = Math.round(PTH * PTK);
   }
+  /* in verticale la scena del menu va sotto la barra dei dati, nello spazio riservato */
+  function placeScene() {
+    const m = $('mScene'), st = $('stage');
+    if (!PT || !m || !$('scrMenu').classList.contains('on')) { if (cv.style.width) { cv.style.cssText = ''; fitCanvas(); } return; }
+    /* la scena riempie lo spazio tra la barra e il menu, ingrandita e centrata sullo schieramento */
+    const r = m.getBoundingClientRect(), sr = st.getBoundingClientRect();
+    const h = Math.max(r.height, r.width * 0.5625), w = Math.max(r.width, h * 16 / 9);
+    const left = Math.min(0, Math.max(sr.width - w, sr.width / 2 - w * 0.6));
+    const css = 'top:' + Math.round(r.top - sr.top) + 'px;height:' + Math.round(h) + 'px;width:' + Math.round(w) + 'px;left:' + Math.round(left) + 'px;right:auto';
+    if (cv.style.cssText.replace(/\s/g, '') !== css.replace(/\s/g, '') + ';') { cv.style.cssText = css; fitCanvas(); }
+  }
   function applyPT() { PT = PTQ.matches; document.documentElement.classList.toggle('pt', PT); setTimeout(() => { fitCanvas(); fitP(); }, 30); }
   PTQ.addEventListener ? PTQ.addEventListener('change', applyPT) : PTQ.addListener(applyPT);
   document.documentElement.classList.toggle('pt', PT);
@@ -4299,7 +4316,7 @@ const RENDER = (function () {
   let last = performance.now(), acc = 0, sway = 0;
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    perfFrame(dt); musicFrame();
+    perfFrame(dt); musicFrame(); placeScene();
     const rc = isRacing(); if (rc !== lastRacing) { lastRacing = rc; document.documentElement.classList.toggle('racing', rc); if (rc && PT) setTimeout(fitP, 30); }
     if (isRacing()) {
       if (!G.paused) {

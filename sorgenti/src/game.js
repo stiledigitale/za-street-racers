@@ -13,6 +13,17 @@
     PTK = Math.min(2, (r.width * (devicePixelRatio || 1)) / 720); PTH = Math.round(720 * r.height / r.width);
     cvP.width = Math.round(720 * PTK); cvP.height = Math.round(PTH * PTK);
   }
+  /* in verticale la scena del menu va sotto la barra dei dati, nello spazio riservato */
+  function placeScene() {
+    const m = $('mScene'), st = $('stage');
+    if (!PT || !m || !$('scrMenu').classList.contains('on')) { if (cv.style.width) { cv.style.cssText = ''; fitCanvas(); } return; }
+    /* la scena riempie lo spazio tra la barra e il menu, ingrandita e centrata sullo schieramento */
+    const r = m.getBoundingClientRect(), sr = st.getBoundingClientRect();
+    const h = Math.max(r.height, r.width * 0.5625), w = Math.max(r.width, h * 16 / 9);
+    const left = Math.min(0, Math.max(sr.width - w, sr.width / 2 - w * 0.6));
+    const css = 'top:' + Math.round(r.top - sr.top) + 'px;height:' + Math.round(h) + 'px;width:' + Math.round(w) + 'px;left:' + Math.round(left) + 'px;right:auto';
+    if (cv.style.cssText.replace(/\s/g, '') !== css.replace(/\s/g, '') + ';') { cv.style.cssText = css; fitCanvas(); }
+  }
   function applyPT() { PT = PTQ.matches; document.documentElement.classList.toggle('pt', PT); setTimeout(() => { fitCanvas(); fitP(); }, 30); }
   PTQ.addEventListener ? PTQ.addEventListener('change', applyPT) : PTQ.addListener(applyPT);
   document.documentElement.classList.toggle('pt', PT);
@@ -407,7 +418,7 @@
   let last = performance.now(), acc = 0, sway = 0;
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    perfFrame(dt); musicFrame();
+    perfFrame(dt); musicFrame(); placeScene();
     const rc = isRacing(); if (rc !== lastRacing) { lastRacing = rc; document.documentElement.classList.toggle('racing', rc); if (rc && PT) setTimeout(fitP, 30); }
     if (isRacing()) {
       if (!G.paused) {
